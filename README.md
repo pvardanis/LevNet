@@ -1,2 +1,2 @@
-# acoustic-ml
+# A CNN architecture for point cloud regression that maps a geometry of levitate particles to the phases of transducers that create acoustic traps in space
 Implementation of a slightly modified version of PointNet for point cloud classification. This modified version skips the input and feature transformation layers of the original architecture and is modified such as the output layer is a fully connected layer of 512 neurons. The sole purpose of this modified version is to map an arbitrary number of point cloud particles to the phases of 512 transducers.
