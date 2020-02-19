@@ -1,3 +1,3 @@
-# A Deep Learning architecture for optimizing the levitatiton of spherical particles in 3d space
+# LevNet: A Deep Learning architecture for optimizing the levitatiton of spherical particles through sound
 
-This project follows the implementation of a slightly modified version of PointNet (https://github.com/charlesq34/pointnet) for point cloud classification. This modified version skips the input and feature transformation layers of the original architecture as well as replaces the output layer with a fully connected layer of 512 neurons. The sole purpose of this model is to map an arbitrary number of levitated particles, represented as a point cloud, to the phases of 512 transducers that create pressure traps in space.
+This project follows the implementation of a modified version of UNet (https://arxiv.org/abs/1505.04597) for biomedical image segmentation. The sole purpose of this model is to map an arbitrary number of levitated particles, represented as a 2d image, to the phases of 512 transducers that create pressure traps in space.
