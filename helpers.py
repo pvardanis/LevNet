@@ -115,7 +115,6 @@ class RunManager():
         for k, v in self.run_params._asdict().items(): results[k] = v
         self.run_data.append(results)
 
-        print('almost ready')
         df = pd.DataFrame.from_dict(self.run_data)
         clear_output(wait=True) # update cell output for each epoch
         display(df)
@@ -126,7 +125,7 @@ class RunManager():
     def track_num_correct(self, preds, labels, data='train'):
         self.epoch_num_correct[data] += self._get_num_correct(preds, labels)
 
-    @torch.no_grad()
+    @torch.no_grad() # only applies to this function
     def _get_num_correct(self, preds, labels):
         return preds.argmax(dim=1).eq(labels).sum().item()
 
