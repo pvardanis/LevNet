@@ -66,13 +66,11 @@ class RunManager():
         self.tb['train'] = SummaryWriter(comment=f'-{run}-train')
         self.tb['valid'] = SummaryWriter(comment=f'-{run}-valid')
 
-        if stop_early:
+        self.stop_early = stop_early
+        if self.stop_early:
             assert run.patience
-            self.stop_early = True
             self.early_stopping = EarlyStopping(patience=run.patience, path=self.tb['valid'].get_logdir()) # initialize early stopping and pass the path to save the best model
-        else:
-            self.stop_early = False
-
+        
         self.save_best_model = save_best_model
 
         images_train, labels_train = next(iter(self.loaders['train']))
