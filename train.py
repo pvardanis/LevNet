@@ -24,10 +24,11 @@ criterion = nn.NLLLoss()
 def train(n_epochs, train_set, valid_set, network, params):
     m = RunManager()
     for run in RunBuilder.get_runs(params):
-        set_seed(0)
+        # set_seed(0)
         network = network.cuda() if use_cuda else network
-        set_seed(0)
+        # set_seed(0)
         train_loader = torch.utils.data.DataLoader(train_set, num_workers=0, batch_size=run.batch_size, shuffle=True)
+        # set_seed(0)
         valid_loader = torch.utils.data.DataLoader(valid_set, num_workers=0, batch_size=run.batch_size, shuffle=True)
         loaders = OrderedDict(train=train_loader, valid=valid_loader)
         optimizer = optim.Adam(network.parameters(), lr=run.lr)
@@ -36,7 +37,6 @@ def train(n_epochs, train_set, valid_set, network, params):
         network.train() # keep grads
         for epoch in range(n_epochs):
             m.begin_epoch()
-            set_seed(0)
             # Train
             for batch_idx, (images, labels) in enumerate(loaders['train']):
                 images, labels = images.cuda(), labels.cuda()
@@ -85,7 +85,9 @@ if __name__ == "__main__":
             patience=[1]
     )
 
-    train(5, train_set, valid_set, Tester(), params)
+    set_seed(0)
+    network = Tester()
+    train(5, train_set, valid_set, network, params)
 
     
 
