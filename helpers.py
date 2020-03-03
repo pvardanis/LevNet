@@ -57,8 +57,11 @@ class RunManager():
         self.loaders = None # dataloaders (train & validation) that's being used for each run
         self.tb = OrderedDict(train=None, valid=None) # tensorboard instance
 
-    def begin_run(self, run, network, loaders, stop_early=True, save_best_model=False):
+        self.stop_early = None # These two can be set in Solver config
+        self.save_best_model = None
 
+    def begin_run(self, run, network, loaders):
+        
         self.run_start_time = time.time()
         self.run_params = run
         self.run_count += 1
@@ -68,13 +71,10 @@ class RunManager():
         self.tb['train'] = SummaryWriter(comment=f'-{run}-train')
         self.tb['valid'] = SummaryWriter(comment=f'-{run}-valid')
 
-        self.stop_early = stop_early
-        if self.stop_early:
+        if self.stop_early: # this is already set in Solver config
             assert run.patience
             self.early_stopping = EarlyStopping(patience=run.patience, path=self.tb['valid'].get_logdir()) # initialize early stopping and pass the path to save the best model
         
-        self.save_best_model = save_best_model
-
         images_train, labels_train = next(iter(self.loaders['train']))
         images_train, labels_train = images_train.cuda(), labels_train.cuda()
         grid_train = torchvision.utils.make_grid(images_train).cuda()
@@ -130,6 +130,11 @@ class RunManager():
         results["epoch duration"] = epoch_duration
         results["run duration"] = run_duration
 
+        # always call early_stopping at the end of each epoch
+        if self.stop_early:
+            self.early_stopping(loss_valid, self.network, save=self.save_best_model)
+            results["patience counter"] = self.early_stopping.counter
+            
         for k, v in self.run_params._asdict().items(): 
             if k != 'patience': # no need to add patience in columns
                 results[k] = v
@@ -137,10 +142,7 @@ class RunManager():
 
         df = pd.DataFrame.from_dict(self.run_data)
         clear_output(wait=True) # update cell output for each epoch
-        display(df)
-
-        # always call early_stopping at the end of each epoch
-        self.early_stopping(loss_valid, self.network, save=self.save_best_model)
+        display(df)        
                 
     def track_loss(self, loss, data='train'):
         self.epoch_loss[data] += loss.item() * self.loaders[data].batch_size
@@ -194,12 +196,11 @@ class EarlyStopping:
         self.delta = delta
         self.path = path 
 
-    def __call__(self, val_loss, model, save=True):
+    def __call__(self, val_loss, model, save):
         """
         Every time an instance is called, the state is updated.
         """
         score = -val_loss
-
         if self.best_score is None:
             self.best_score = score
             self.save_checkpoint(val_loss, model)
