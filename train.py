@@ -34,7 +34,7 @@ def train(n_epochs, train_set, valid_set, network, params):
         
         m.begin_run(run, network, loaders, stop_early=True, save_best_model=False)
         network.train() # keep grads
-        for epoch in range(num_epochs):
+        for epoch in range(n_epochs):
             m.begin_epoch()
             set_seed(0)
             # Train
