@@ -1,15 +1,11 @@
-# import itertools as it
 from collections import OrderedDict
-# import time
-# import random
 import torch
-# import numpy as np
-# import pandas as pd
+from torch.autograd import Variable
 import torch.nn as nn
-# import torch.nn.functional as F
 import torchvision.utils 
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
+import torchvision.models
 from helpers import *
 from models import *
 
@@ -17,60 +13,87 @@ from models import *
 set_seed(0)
 
 class Solver(RunManager): # Solver() inherits from RunManager()
-    def __init__(self, train_set, valid_set, test_set, config=None, params_dict=None):
+    def __init__(self, train_set, valid_set, test_set, config=None):
         super().__init__()
-
-        # Always same
-        self.criterion = nn.NLLLoss()
-        self.networks = OrderedDict(Tester=Tester)
-        self.optimizers = OrderedDict(Adam=optim.Adam)
-
-        if config:
-            # Data Loaders
-            self.train_set = train_set
-            self.valid_set = valid_set
-            self.test_set = test_set
-            self.num_workers = config.num_workers
-
-            # Model Settings
-            self.model_type = config.model_type
-            self.image_size = config.image_size
-            self.input_ch = config.input_ch
-            self.output_ch = config.output_ch
-            self.optimizer = config.optimizer
-            
-            # Optimizer hyper-parameters
-            self.lr = config.lr
-            self.beta1 = config.beta1
-            self.beta2 = config.beta2
-            self.momentum = config.momentum
-
-            # Training settings
-            self.num_epochs = config.num_epochs
-            self.num_epochs_decay = config.num_epochs_decay
-            self.batch_size = config.batch_size
-            self.stop_early = config.early_stopping
-            self.save_best_model = config.save_best_model
-            
-
-        if params_dict: # parameters for training loop (config is more general, so doesn't have to be called in a RunManager instance)
-            self.params = params_dict
 
         # Global settings
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+        # Always same
+        self.criterion = nn.NLLLoss().to(self.device)
+        self.networks = OrderedDict(tester=Tester)
+        self.optimizers = OrderedDict(adam=optim.Adam, sgd=optim.SGD)
+
+        # Data Loaders
+        self.train_set = train_set
+        self.valid_set = valid_set
+        self.test_set = test_set
+        self.num_workers = config.num_workers
+
+        # Model Settings
+        self.model_type = config.model_type
+        self.image_size = config.image_size
+        self.input_ch = config.input_ch
+        self.output_ch = config.output_ch
+        self.optimizer = config.optimizers # list of optimizers
+        
+        # Create params dictionary
+        self.params = OrderedDict()
+        
+        # Optimizer hyper-parameters
+        self.params['optimizer'] = config.optimizers
+        self.params['lr'] = config.lr
+        self.betas = [config.beta1, config.beta2] # Adam
+        self.momentum = config.momentum # SGD
+
+        # Training settings
+        self.num_epochs = config.num_epochs
+        self.num_epochs_decay = config.num_epochs_decay
+        self.params['batch_size'] = config.batch_size
+        self.stop_early = config.early_stopping
+        if self.stop_early: self.params['patience'] = [config.patience]
+        self.save_best_model = config.save_best_model
+                
     def build_model(self):
-        pass
+
+        if self.model_type in ['vgg-16', 'vgg-19']:
+            
+            assert self.image_size == 224, "ERROR: Wrong image size."
+            model = torchvision.models.vgg16(pretrained=True) if self.model_type == 'vgg-16' else torchvision.models.vgg19(pretrained=True)
+            if self.input_ch != 3:
+                first_conv_layer = [nn.Conv2d(self.input_ch, 3, kernel_size=3, stride=1, padding=1, dilation=1, groups=1, bias=True)]
+                first_conv_layer.extend(list(model.features))  
+                model.features= nn.Sequential(*first_conv_layer)  
+
+            model.classifier[-1] = nn.Linear(4096, 1000)
+            model.classifier.add_module('7', nn.ReLU())
+            model.classifier.add_module('8', nn.Dropout(p=0.5, inplace=False))
+            model.classifier.add_module('9', nn.Linear(1000, self.output_ch))
+            model.classifier.add_module('10', nn.LogSoftmax(dim=1))
+            
+            for param in model.features.parameters(): # disable grad for trained layers
+                param.requires_grad = False
+
+            # x = torch.randn(1, 1, 224, 224) # (256, 256, 3)
+            # output = model(x)
+            # print(output.shape)
+            return model.to(self.device)
+
+        elif self.model_type == 'tester': return Tester().to(self.device)
+        elif self.model_type == 'levnet': return LevNet().to(self.device)
 
     def train(self):
-        
         for run in RunBuilder.get_runs(self.params):
-            network = self.networks[self.model_type]().to(self.device) # for each run create a new instance of the network
+            network = self.build_model() # for each run create a new instance of the network
             train_loader = torch.utils.data.DataLoader(self.train_set, num_workers=self.num_workers, batch_size=run.batch_size, shuffle=True)
             valid_loader = torch.utils.data.DataLoader(self.valid_set, num_workers=self.num_workers, batch_size=run.batch_size, shuffle=True)
             loaders = OrderedDict(train=train_loader, valid=valid_loader)
-            optimizer = self.optimizers[self.optimizer](network.parameters(), lr=run.lr)
             
+            if run.optimizer == 'adam':
+                optimizer = self.optimizers[run.optimizer](network.parameters(), lr=run.lr, betas=self.betas)
+            elif run.optimizer == 'sgd':
+                optimizer = self.optimizers[run.optimizer](network.parameters(), lr=run.lr, momentum=self.momentum)
+
             self.begin_run(run, network, loaders)
             network.train() # keep grads
             for epoch in range(self.num_epochs):
@@ -86,7 +109,7 @@ class Solver(RunManager): # Solver() inherits from RunManager()
                     
                     self.track_loss(loss, 'train')
                     self.track_num_correct(preds, labels, 'train')
-                
+                                    
                 # Validation
                 network.eval() # skips dropout and batch_norm 
                 for batch_idx, (images, labels) in enumerate(loaders['valid']):

@@ -1,3 +1,4 @@
+import print_state
 import argparse
 import os
 from solver import Solver
@@ -9,8 +10,7 @@ from collections import OrderedDict
 
 set_seed(0)
 
-def get_solver(config):
-
+def main(config):
     # train_loader = get_loader(image_path=config.train_path,
     #                         image_size=config.image_size,
     #                         batch_size=config.batch_size,
@@ -29,8 +29,24 @@ def get_solver(config):
     #                         num_workers=config.num_workers,
     #                         mode='test',
     #                         augmentation_prob=0.)
+    print_state.console = config.console
 
-    transform = transforms.Compose([transforms.ToTensor()])
+    # making sure that config parameters are ok
+    if config.model_type not in ['tester', 'levnet', 'vgg-16', 'vgg-19', 'inception-v3']:
+        print('ERROR: model_type should be selected from the available models: Tester/LevNet/VGG-16/VGG-19/Inception-v3.')
+        return
+
+    if not set(config.optimizers).issubset(['adam', 'sgd']):
+        print('ERROR: optimizer should be selected from the available optimizers: Adam/SGD.')
+        return
+
+    transform = transforms.Compose([#transforms.RandomRotation(30),
+                                    transforms.RandomResizedCrop(224),
+                                    # transforms.RandomHorizontalFlip(),
+                                    # transforms.RandomVerticalFlip(),
+                                    transforms.ToTensor(),
+                                    # transforms.Normalize([0.5], [0.5]),
+                                    ])
 
     dataset = datasets.FashionMNIST(
                         root='./data',
@@ -40,14 +56,10 @@ def get_solver(config):
     
     train_set, valid_set = torch.utils.data.random_split(dataset, [50000, 10000])
 
-    params = OrderedDict(
-            lr=[0.001],
-            batch_size=[128],
-            patience=[1]
-    )
-
-    solver = Solver(train_set, valid_set, test_set=None, config=config, params_dict=params)
-    return solver
+    solver = Solver(train_set, valid_set, test_set=None, config=config)
+   
+    if config.mode == 'train':
+        solver.train()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -60,24 +72,29 @@ if __name__ == '__main__':
     # training hyper-parameters (optional)
     parser.add_argument('--num_epochs', type=int, default=100, help='number of epochs')
     parser.add_argument('--num_epochs_decay', type=int, default=70, help='threshold for learning rate decay')
-    parser.add_argument('--batch_size', type=int, default=1, help='batch size for each pass') 
+    parser.add_argument('--batch_size', nargs='+', type=int, default=1, help='batch size for each pass') 
     parser.add_argument('--num_workers', type=int, default=0, help='number of workers for dataloader')
-    parser.add_argument('--lr', type=float, default=0.0002, help='learning rate')
-    parser.add_argument('--optimizer', type=str, default='Adam', help='Adam/SGD') # which model to train/test
-    parser.add_argument('--beta1', type=float, default=0.5, help='beta1 for Adam optimizer')        # momentum1 in Adam
-    parser.add_argument('--beta2', type=float, default=0.999, help='beta2 for Adam optimizer')      # momentum2 in Adam    
-    parser.add_argument('--momentum', type=float, default=0.9, help='momentum for SGD') # which model to train/test
-    parser.add_argument('--lr_decay', type=float, default=0, help='learning rate decay') # which model to train/test
+    parser.add_argument('--lr', nargs='+', type=float, default=0.0002, help='learning rate')
+    parser.add_argument('--lr_decay', type=float, default=0, help='learning rate decay') 
+    parser.add_argument('--optimizers', nargs='+', type=str.lower, default=['Adam'], help='list of optimizers: Adam/SGD') 
+    parser.add_argument('--beta1', type=float, default=0.5, help='beta1 for Adam optimizer')        
+    parser.add_argument('--beta2', type=float, default=0.999, help='beta2 for Adam optimizer')          
+    parser.add_argument('--momentum', type=float, default=0.9, help='momentum for SGD') 
     parser.add_argument('--early_stopping', action='store_true', default=False, help='use early stopping for training') 
+    parser.add_argument('--patience', type=int, default=20, help='patience for early stopping')
     parser.add_argument('--save_best_model', action='store_true', default=False, help='save best model from each run') 
     
-    # misc
-    parser.add_argument('--mode', type=str, default='train', help='train/test')
-    parser.add_argument('--model_type', type=str, default='Tester', help='Tester/LevNet/VGG-16/VGG-19/Inception-v3') # which model to train/test
+    # datasets
+    parser.add_argument('--mode', type=str.lower, default='train', help='train/test')
+    parser.add_argument('--model_type', type=str.lower, default='tester', help='Tester/LevNet/VGG-16/VGG-19/Inception-v3') 
     parser.add_argument('--model_path', type=str, default='./models')
     parser.add_argument('--train_path', type=str, default='./dataset/train/')
     parser.add_argument('--valid_path', type=str, default='./dataset/valid/')
     parser.add_argument('--test_path', type=str, default='./dataset/test/')
     parser.add_argument('--result_path', type=str, default='./results/')
 
+    # print_output
+    parser.add_argument('--console', action='store_true', default=False, help='True if using command prompt, False if using Jupyter')
+
     config = parser.parse_args()
+    main(config)

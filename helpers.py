@@ -1,3 +1,4 @@
+import print_state
 import numpy as np
 import pandas as pd
 from collections import OrderedDict
@@ -42,7 +43,6 @@ class RunBuilder():
 
 class RunManager():
     def __init__(self):
-
         self.epoch_count = 0 # it could've been even more abstract than this (i.e. define Epoch())
         self.epoch_loss = 0
         self.epoch_num_correct = 0
@@ -59,6 +59,8 @@ class RunManager():
 
         self.stop_early = None # These two can be set in Solver config
         self.save_best_model = None
+        self.optimizers = None
+        self.optimizer = None
 
     def begin_run(self, run, network, loaders):
         
@@ -75,18 +77,18 @@ class RunManager():
             assert run.patience
             self.early_stopping = EarlyStopping(patience=run.patience, path=self.tb['valid'].get_logdir()) # initialize early stopping and pass the path to save the best model
         
-        images_train, labels_train = next(iter(self.loaders['train']))
-        images_train, labels_train = images_train.cuda(), labels_train.cuda()
-        grid_train = torchvision.utils.make_grid(images_train).cuda()
+        # images_train, labels_train = next(iter(self.loaders['train']))
+        # images_train, labels_train = images_train.cuda(), labels_train.cuda()
+        # grid_train = torchvision.utils.make_grid(images_train).cuda()
 
-        images_valid, labels_valid = next(iter(self.loaders['valid']))
-        images_valid, labels_valid = images_valid.cuda(), labels_valid.cuda()
-        grid_valid = torchvision.utils.make_grid(images_valid).cuda()
+        # images_valid, labels_valid = next(iter(self.loaders['valid']))
+        # images_valid, labels_valid = images_valid.cuda(), labels_valid.cuda()
+        # grid_valid = torchvision.utils.make_grid(images_valid).cuda()
 
-        self.tb['train'].add_image('images_train', grid_train) # not necessarily needed
-        self.tb['valid'].add_image('images_valid', grid_valid) 
-        self.tb['train'].add_graph(self.network, images_train)
-
+        # self.tb['train'].add_image('images_train', grid_train) # not necessarily needed
+        # self.tb['valid'].add_image('images_valid', grid_valid) 
+        # self.tb['train'].add_graph(self.network, images_train)
+        
     def end_run(self):
 
         self.tb['train'].close()
@@ -138,11 +140,17 @@ class RunManager():
         for k, v in self.run_params._asdict().items(): 
             if k != 'patience': # no need to add patience in columns
                 results[k] = v
+
         self.run_data.append(results)
 
         df = pd.DataFrame.from_dict(self.run_data)
-        clear_output(wait=True) # update cell output for each epoch
-        display(df)        
+
+        if print_state.console:
+            os.system('cls||clear') # clear console
+            print(df)            
+        else:
+            clear_output(wait=True) # update cell output for each epoch
+            display(df)
                 
     def track_loss(self, loss, data='train'):
         self.epoch_loss[data] += loss.item() * self.loaders[data].batch_size
