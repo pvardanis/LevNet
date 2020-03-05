@@ -115,7 +115,7 @@ class Solver(object):
                 network.train() # keep grads
                 m.begin_epoch()
                 print('\nEpoch {}'.format(epoch+1))
-                print('Train:'.format(epoch+1))
+                print('\nTrain:\n')
                 for batch_idx, (images, labels) in enumerate(Bar(loaders['train'])):
                     images, labels = images.to(self.device), labels.to(self.device)
                     optimizer.zero_grad()
@@ -128,15 +128,16 @@ class Solver(object):
                     m.track_num_correct(preds, labels, 'train')
                                     
                 # Validation
-                print('Valid:'.format(epoch+1))
+                print('\nValid:\n')
                 network.eval() # skips dropout and batch_norm 
-                for batch_idx, (images, labels) in enumerate(Bar(loaders['valid'])):
-                    images, labels = images.to(self.device), labels.to(self.device)
-                    preds = network(images)
-                    loss = self.criterion(preds, labels)
+                with torch.no_grad():
+                    for batch_idx, (images, labels) in enumerate(Bar(loaders['valid'])):
+                        images, labels = images.to(self.device), labels.to(self.device)
+                        preds = network(images)
+                        loss = self.criterion(preds, labels)
 
-                    m.track_loss(loss, 'valid')
-                    m.track_num_correct(preds, labels, 'valid')
+                        m.track_loss(loss, 'valid')
+                        m.track_num_correct(preds, labels, 'valid')
                     
                 m.end_epoch()
                 if m._get_early_stop():
