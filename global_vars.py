@@ -12,4 +12,4 @@ def init():
     tensorboard = None
 
 def cls():
-    os.system('cls' if os.name=='posix' else 'clear')
+    os.system('clear' if os.name=='posix' else 'cls')
