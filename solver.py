@@ -107,10 +107,10 @@ class Solver(object):
                 optimizer = self.optimizers[run.optimizer](network.parameters(), lr=run.lr, momentum=self.momentum)
 
             m.begin_run(run, network, loaders)
-            network.train() # keep grads
             for epoch in range(self.num_epochs):
-                m.begin_epoch()
                 # Train
+                network.train() # keep grads
+                m.begin_epoch()
                 for batch_idx, (images, labels) in enumerate(loaders['train']):
                     images, labels = images.to(self.device), labels.to(self.device)
                     optimizer.zero_grad()

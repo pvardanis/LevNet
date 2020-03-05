@@ -97,14 +97,12 @@ class RunManager(object):
         self.epoch_count = 0
 
     def begin_epoch(self):
-
         self.epoch_start_time = time.time()
         self.epoch_count += 1
         self.epoch_loss = OrderedDict(train=0, valid=0)
         self.epoch_num_correct = OrderedDict(train=0, valid=0)
 
     def end_epoch(self):
-        
         loss_train = self.epoch_loss['train'] / len(self.loaders['train'].dataset)
         accuracy_train = self.epoch_num_correct['train'] / len(self.loaders['train'].dataset)
 
