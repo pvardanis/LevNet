@@ -29,7 +29,10 @@ def main(config):
     #                         num_workers=config.num_workers,
     #                         mode='test',
     #                         augmentation_prob=0.)
-    print_state.console = config.console
+    
+    # set global_vars
+    global_vars.console = config.console
+    global_vars.tensorboard = config.tensorboard
 
     # making sure that config parameters are ok
     if config.model_type not in ['tester', 'levnet', 'vgg-16', 'vgg-19', 'inception-v3']:
@@ -65,24 +68,24 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
    
     # model hyper-parameters (optional)
-    parser.add_argument('--image_size', type=int, default=224, help='w x h of input image')
-    parser.add_argument('--input_ch', type=int, default=2, help='number of channels of input image')
-    parser.add_argument('--output_ch', type=int, default=512, help='number of output nodes')
+    parser.add_argument('--image_size', type=int, default=224, help='w x h of input image.')
+    parser.add_argument('--input_ch', type=int, default=2, help='Number of channels of input image.')
+    parser.add_argument('--output_ch', type=int, default=512, help='Number of output nodes.')
     
     # training hyper-parameters (optional)
-    parser.add_argument('--num_epochs', type=int, default=100, help='number of epochs')
-    parser.add_argument('--num_epochs_decay', type=int, default=70, help='threshold for learning rate decay')
-    parser.add_argument('--batch_size', nargs='+', type=int, default=1, help='batch size for each pass') 
-    parser.add_argument('--num_workers', type=int, default=0, help='number of workers for dataloader')
-    parser.add_argument('--lr', nargs='+', type=float, default=0.0002, help='learning rate')
-    parser.add_argument('--lr_decay', type=float, default=0, help='learning rate decay') 
-    parser.add_argument('--optimizers', nargs='+', type=str.lower, default=['Adam'], help='list of optimizers: Adam/SGD') 
-    parser.add_argument('--beta1', type=float, default=0.5, help='beta1 for Adam optimizer')        
-    parser.add_argument('--beta2', type=float, default=0.999, help='beta2 for Adam optimizer')          
-    parser.add_argument('--momentum', type=float, default=0.9, help='momentum for SGD') 
-    parser.add_argument('--early_stopping', action='store_true', default=False, help='use early stopping for training') 
-    parser.add_argument('--patience', type=int, default=20, help='patience for early stopping')
-    parser.add_argument('--save_best_model', action='store_true', default=False, help='save best model from each run') 
+    parser.add_argument('--num_epochs', type=int, default=100, help='Number of epochs.')
+    parser.add_argument('--num_epochs_decay', type=int, default=70, help='Threshold for learning rate decay.')
+    parser.add_argument('--batch_size', nargs='+', type=int, default=1, help='Batch size for each pass.') 
+    parser.add_argument('--num_workers', type=int, default=0, help='Number of workers for dataloader.')
+    parser.add_argument('--lr', nargs='+', type=float, default=0.0002, help='Learning rate.')
+    parser.add_argument('--lr_decay', type=float, default=0, help='Learning rate decay.') 
+    parser.add_argument('--optimizers', nargs='+', type=str.lower, default=['Adam'], help='List of optimizers: Adam/SGD.') 
+    parser.add_argument('--beta1', type=float, default=0.5, help='Beta1 for Adam optimizer.')        
+    parser.add_argument('--beta2', type=float, default=0.999, help='Beta2 for Adam optimizer.')          
+    parser.add_argument('--momentum', type=float, default=0.9, help='Momentum for SGD.') 
+    parser.add_argument('--early_stopping', action='store_true', default=False, help='Use early stopping for training.') 
+    parser.add_argument('--patience', nargs='+', type=int, default=20, help='Patience for early stopping.')
+    parser.add_argument('--save_best_model', action='store_true', default=False, help='Save best model from each run.') 
     
     # datasets
     parser.add_argument('--mode', type=str.lower, default='train', help='train/test')
@@ -93,8 +96,9 @@ if __name__ == '__main__':
     parser.add_argument('--test_path', type=str, default='./dataset/test/')
     parser.add_argument('--result_path', type=str, default='./results/')
 
-    # print_output
-    parser.add_argument('--console', action='store_true', default=False, help='True if using command prompt, False if using Jupyter')
+    # global_vars
+    parser.add_argument('--console', action='store_true', default=False, help='True if using command prompt, False if using Jupyter.')
+    parser.add_argument('--tensorboard', action='store_true', default=False, help='True if using tensorboard, else False.')
 
     config = parser.parse_args()
     main(config)

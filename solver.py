@@ -12,7 +12,7 @@ from models import *
 # Global variables
 set_seed(0)
 
-class Solver(RunManager): # Solver() inherits from RunManager()
+class Solver(object): 
     def __init__(self, train_set, valid_set, test_set, config=None):
         super().__init__()
 
@@ -21,7 +21,6 @@ class Solver(RunManager): # Solver() inherits from RunManager()
 
         # Always same
         self.criterion = nn.NLLLoss().to(self.device)
-        self.networks = OrderedDict(tester=Tester)
         self.optimizers = OrderedDict(adam=optim.Adam, sgd=optim.SGD)
 
         # Data Loaders
@@ -51,7 +50,7 @@ class Solver(RunManager): # Solver() inherits from RunManager()
         self.num_epochs_decay = config.num_epochs_decay
         self.params['batch_size'] = config.batch_size
         self.stop_early = config.early_stopping
-        if self.stop_early: self.params['patience'] = [config.patience]
+        if self.stop_early: self.params['patience'] = config.patience 
         self.save_best_model = config.save_best_model
                 
     def build_model(self):
@@ -83,8 +82,9 @@ class Solver(RunManager): # Solver() inherits from RunManager()
         elif self.model_type == 'levnet': return LevNet().to(self.device)
 
     def train(self):
+        m = RunManager(self.save_best_model, self.stop_early)
         for run in RunBuilder.get_runs(self.params):
-            network = self.build_model() # for each run create a new instance of the network
+            network = self.build_model() # this returns a new instance of the network .to(self.device)
             train_loader = torch.utils.data.DataLoader(self.train_set, num_workers=self.num_workers, batch_size=run.batch_size, shuffle=True)
             valid_loader = torch.utils.data.DataLoader(self.valid_set, num_workers=self.num_workers, batch_size=run.batch_size, shuffle=True)
             loaders = OrderedDict(train=train_loader, valid=valid_loader)
@@ -94,10 +94,10 @@ class Solver(RunManager): # Solver() inherits from RunManager()
             elif run.optimizer == 'sgd':
                 optimizer = self.optimizers[run.optimizer](network.parameters(), lr=run.lr, momentum=self.momentum)
 
-            self.begin_run(run, network, loaders)
+            m.begin_run(run, network, loaders)
             network.train() # keep grads
             for epoch in range(self.num_epochs):
-                self.begin_epoch()
+                m.begin_epoch()
                 # Train
                 for batch_idx, (images, labels) in enumerate(loaders['train']):
                     images, labels = images.to(self.device), labels.to(self.device)
@@ -107,8 +107,8 @@ class Solver(RunManager): # Solver() inherits from RunManager()
                     loss.backward()
                     optimizer.step()
                     
-                    self.track_loss(loss, 'train')
-                    self.track_num_correct(preds, labels, 'train')
+                    m.track_loss(loss, 'train')
+                    m.track_num_correct(preds, labels, 'train')
                                     
                 # Validation
                 network.eval() # skips dropout and batch_norm 
@@ -117,14 +117,14 @@ class Solver(RunManager): # Solver() inherits from RunManager()
                     preds = network(images)
                     loss = self.criterion(preds, labels)
 
-                    self.track_loss(loss, 'valid')
-                    self.track_num_correct(preds, labels, 'valid')
+                    m.track_loss(loss, 'valid')
+                    m.track_num_correct(preds, labels, 'valid')
                     
-                self.end_epoch()
-                if self._get_early_stopping():
+                m.end_epoch()
+                if m._get_early_stop():
                     break
                 
-            self.end_run()
-        self.save_results('results')
+            m.end_run()
+        m.save_results('results')
 
     

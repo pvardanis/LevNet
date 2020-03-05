@@ -1,4 +1,4 @@
-import print_state
+import global_vars
 import numpy as np
 import pandas as pd
 from collections import OrderedDict
@@ -41,8 +41,11 @@ class RunBuilder():
 
         return runs
 
-class RunManager():
-    def __init__(self):
+class RunManager(object):
+    def __init__(self, save_best_model, stop_early):
+        self.save_best_model = save_best_model
+        self.stop_early = stop_early
+        
         self.epoch_count = 0 # it could've been even more abstract than this (i.e. define Epoch())
         self.epoch_loss = 0
         self.epoch_num_correct = 0
@@ -57,13 +60,9 @@ class RunManager():
         self.loaders = None # dataloaders (train & validation) that's being used for each run
         self.tb = OrderedDict(train=None, valid=None) # tensorboard instance
 
-        self.stop_early = None # These two can be set in Solver config
-        self.save_best_model = None
-        self.optimizers = None
-        self.optimizer = None
-
     def begin_run(self, run, network, loaders):
         
+        self.early_stopping = None
         self.run_start_time = time.time()
         self.run_params = run
         self.run_count += 1
@@ -73,21 +72,22 @@ class RunManager():
         self.tb['train'] = SummaryWriter(comment=f'-{run}-train')
         self.tb['valid'] = SummaryWriter(comment=f'-{run}-valid')
 
-        if self.stop_early: # this is already set in Solver config
-            assert run.patience
+        if self.stop_early: 
+            assert run.patience, "ERROR: You forgot to add patience."
             self.early_stopping = EarlyStopping(patience=run.patience, path=self.tb['valid'].get_logdir()) # initialize early stopping and pass the path to save the best model
         
-        # images_train, labels_train = next(iter(self.loaders['train']))
-        # images_train, labels_train = images_train.cuda(), labels_train.cuda()
-        # grid_train = torchvision.utils.make_grid(images_train).cuda()
+        if global_vars.tensorboard: # add graph and images to SummaryWriter()
+            images_train, labels_train = next(iter(self.loaders['train']))
+            images_train, labels_train = images_train.cuda(), labels_train.cuda()
+            grid_train = torchvision.utils.make_grid(images_train).cuda()
 
-        # images_valid, labels_valid = next(iter(self.loaders['valid']))
-        # images_valid, labels_valid = images_valid.cuda(), labels_valid.cuda()
-        # grid_valid = torchvision.utils.make_grid(images_valid).cuda()
+            images_valid, labels_valid = next(iter(self.loaders['valid']))
+            images_valid, labels_valid = images_valid.cuda(), labels_valid.cuda()
+            grid_valid = torchvision.utils.make_grid(images_valid).cuda()
 
-        # self.tb['train'].add_image('images_train', grid_train) # not necessarily needed
-        # self.tb['valid'].add_image('images_valid', grid_valid) 
-        # self.tb['train'].add_graph(self.network, images_train)
+            self.tb['train'].add_image('images_train', grid_train) # not necessarily needed
+            self.tb['valid'].add_image('images_valid', grid_valid) 
+            self.tb['train'].add_graph(self.network, images_train)
         
     def end_run(self):
 
@@ -113,14 +113,15 @@ class RunManager():
         epoch_duration = time.time() - self.epoch_start_time
         run_duration = time.time() - self.run_start_time
 
-        self.tb['train'].add_scalar('Loss', loss_train, self.epoch_count)
-        self.tb['train'].add_scalar('Accuracy', accuracy_train, self.epoch_count)
-        self.tb['valid'].add_scalar('Loss', loss_valid, self.epoch_count)
-        self.tb['valid'].add_scalar('Accuracy', accuracy_valid, self.epoch_count)
+        if global_vars.tensorboard: # add graphs to SummaryWriter()
+            self.tb['train'].add_scalar('Loss', loss_train, self.epoch_count)
+            self.tb['train'].add_scalar('Accuracy', accuracy_train, self.epoch_count)
+            self.tb['valid'].add_scalar('Loss', loss_valid, self.epoch_count)
+            self.tb['valid'].add_scalar('Accuracy', accuracy_valid, self.epoch_count)
 
-        for name, param in self.network.named_parameters():
-            self.tb['train'].add_histogram(name, param, self.epoch_count)
-            self.tb['train'].add_histogram(f'{name}.grad', param.grad, self.epoch_count)
+            for name, param in self.network.named_parameters():
+                self.tb['train'].add_histogram(name, param, self.epoch_count)
+                self.tb['train'].add_histogram(f'{name}.grad', param.grad, self.epoch_count)
 
         results = OrderedDict()
         results["run"] = self.run_count
@@ -162,7 +163,7 @@ class RunManager():
     def _get_num_correct(self, preds, labels):
         return preds.argmax(dim=1).eq(labels).sum().item()
 
-    def _get_early_stopping(self):
+    def _get_early_stop(self):
         return self.early_stopping.early_stop if self.stop_early else False
 
     def save_results(self, filename):
