@@ -146,7 +146,7 @@ class RunManager(object):
         df = pd.DataFrame.from_dict(self.run_data)
 
         if global_vars.console:
-            os.system('cls||clear') # clear console
+            global_vars.cls() # clear console output
             print(df)            
         else:
             clear_output(wait=True) # update cell output for each epoch

@@ -94,11 +94,11 @@ class Solver(object):
 
         elif self.model_type == 'tester': return Tester().to(self.device)
         elif self.model_type == 'levnet': return LevNet().to(self.device)
-
+    
     def train(self):
         m = RunManager(self.save_best_model, self.stop_early)
         for run in RunBuilder.get_runs(self.params):
-            os.system('cls||clear')
+            global_vars.cls()
             network = self.build_model() # this returns a new instance of the network .to(self.device)
             train_loader = torch.utils.data.DataLoader(self.train_set, num_workers=self.num_workers, batch_size=run.batch_size, shuffle=True)
             valid_loader = torch.utils.data.DataLoader(self.valid_set, num_workers=self.num_workers, batch_size=run.batch_size, shuffle=True)
@@ -143,4 +143,3 @@ class Solver(object):
             m.end_run()
         m.save_results('results')
 
-    
