@@ -12,5 +12,4 @@ def init():
     tensorboard = None
 
 def cls():
-    print(os.name)
-    # os.system('cls' if os.name=='nt' else 'clear')
+    os.system('cls' if os.name=='posix' else 'clear')
