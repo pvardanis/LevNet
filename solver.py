@@ -52,6 +52,8 @@ class Solver(object):
         self.stop_early = config.early_stopping
         if self.stop_early: self.params['patience'] = config.patience 
         self.save_best_model = config.save_best_model
+
+        print(self.params)
                 
     def build_model(self):
 
@@ -70,8 +72,18 @@ class Solver(object):
             model.classifier.add_module('9', nn.Linear(1000, self.output_ch))
             model.classifier.add_module('10', nn.LogSoftmax(dim=1))
             
-            for param in model.features.parameters(): # disable grad for trained layers
+            for param in model.features[1:].parameters(): # disable grad for trained layers
                 param.requires_grad = False
+
+            # make sure that params are freezed the correct way            
+            # for param in model.features[1:].parameters(): # disable grad for trained layers
+            #     if param.requires_grad == True: print("ERROR: params not freezed in features!")
+            
+            # for param in model.features[0].parameters():
+            #     if param.requires_grad == False: print("ERROR: params freezed in first_conv_layer")
+
+            # for param in model.classifier.parameters():
+            #     if param.requires_grad == False: print("ERROR: params freezed in classifier")
 
             # x = torch.randn(1, 1, 224, 224) # (256, 256, 3)
             # output = model(x)

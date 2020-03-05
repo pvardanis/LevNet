@@ -11,6 +11,7 @@ import random
 import torch
 import torchvision
 from torch.utils.tensorboard import SummaryWriter
+import matplotlib.pyplot as plt
 
 from IPython.display import clear_output
 
@@ -146,7 +147,7 @@ class RunManager(object):
 
         df = pd.DataFrame.from_dict(self.run_data)
 
-        if print_state.console:
+        if global_vars.console:
             os.system('cls||clear') # clear console
             print(df)            
         else:
@@ -229,3 +230,16 @@ class EarlyStopping:
         torch.save(model.state_dict(), self.path+'/checkpoint.pt')
         self.val_loss_min = val_loss
 
+def test_model(model, dataset):
+    ''' 
+    Tests model output for an input image.
+    '''
+    loader = torch.utils.data.DataLoader(dataset, num_workers=0, batch_size=64, shuffle=True)
+    images, labels = next(iter(loader))
+    image = images[0].squeeze(dim=0)
+    plt.imshow(image)
+    plt.show()
+    
+    print("Input shape: {}".format(images[0].unsqueeze(dim=0).shape))
+    output = model(images[0].unsqueeze(dim=0).to('cuda'))
+    print(output, output.shape)

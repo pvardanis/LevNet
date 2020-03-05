@@ -1,4 +1,4 @@
-import print_state
+import global_vars
 import argparse
 import os
 from solver import Solver
@@ -7,6 +7,8 @@ import torch
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from collections import OrderedDict
+import matplotlib.pyplot as plt
+from helpers import test_model
 
 set_seed(0)
 
@@ -60,7 +62,8 @@ def main(config):
     train_set, valid_set = torch.utils.data.random_split(dataset, [50000, 10000])
 
     solver = Solver(train_set, valid_set, test_set=None, config=config)
-   
+    # model = solver.build_model()
+    # test_model(model, train_set)
     if config.mode == 'train':
         solver.train()
 
@@ -69,7 +72,7 @@ if __name__ == '__main__':
    
     # model hyper-parameters (optional)
     parser.add_argument('--image_size', type=int, default=224, help='w x h of input image.')
-    parser.add_argument('--input_ch', type=int, default=2, help='Number of channels of input image.')
+    parser.add_argument('--input_ch', type=int, default=2, help='Number of channels of input image. ')
     parser.add_argument('--output_ch', type=int, default=512, help='Number of output nodes.')
     
     # training hyper-parameters (optional)
@@ -79,12 +82,12 @@ if __name__ == '__main__':
     parser.add_argument('--num_workers', type=int, default=0, help='Number of workers for dataloader.')
     parser.add_argument('--lr', nargs='+', type=float, default=0.0002, help='Learning rate.')
     parser.add_argument('--lr_decay', type=float, default=0, help='Learning rate decay.') 
-    parser.add_argument('--optimizers', nargs='+', type=str.lower, default=['Adam'], help='List of optimizers: Adam/SGD.') 
+    parser.add_argument('--optimizers', nargs='+', type=str.lower, default=['adam'], help='List of optimizers: Adam/SGD.') 
     parser.add_argument('--beta1', type=float, default=0.5, help='Beta1 for Adam optimizer.')        
     parser.add_argument('--beta2', type=float, default=0.999, help='Beta2 for Adam optimizer.')          
     parser.add_argument('--momentum', type=float, default=0.9, help='Momentum for SGD.') 
     parser.add_argument('--early_stopping', action='store_true', default=False, help='Use early stopping for training.') 
-    parser.add_argument('--patience', nargs='+', type=int, default=20, help='Patience for early stopping.')
+    parser.add_argument('--patience', nargs='+', type=int, default=[20], help='Patience for early stopping.')
     parser.add_argument('--save_best_model', action='store_true', default=False, help='Save best model from each run.') 
     
     # datasets
