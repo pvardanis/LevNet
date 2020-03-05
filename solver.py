@@ -6,8 +6,10 @@ import torchvision.utils
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 import torchvision.models
+import os
 from helpers import *
 from models import *
+from barbar import Bar
 
 # Global variables
 set_seed(0)
@@ -96,6 +98,7 @@ class Solver(object):
     def train(self):
         m = RunManager(self.save_best_model, self.stop_early)
         for run in RunBuilder.get_runs(self.params):
+            os.system('cls||clear')
             network = self.build_model() # this returns a new instance of the network .to(self.device)
             train_loader = torch.utils.data.DataLoader(self.train_set, num_workers=self.num_workers, batch_size=run.batch_size, shuffle=True)
             valid_loader = torch.utils.data.DataLoader(self.valid_set, num_workers=self.num_workers, batch_size=run.batch_size, shuffle=True)
@@ -111,7 +114,8 @@ class Solver(object):
                 # Train
                 network.train() # keep grads
                 m.begin_epoch()
-                for batch_idx, (images, labels) in enumerate(loaders['train']):
+                print('\nEpoch: {}'.format(epoch+1))
+                for batch_idx, (images, labels) in enumerate(Bar(loaders['train'])):
                     images, labels = images.to(self.device), labels.to(self.device)
                     optimizer.zero_grad()
                     preds = network(images)
