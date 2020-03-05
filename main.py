@@ -35,7 +35,7 @@ def main(config):
     # set global_vars
     global_vars.console = config.console
     global_vars.tensorboard = config.tensorboard
-    global_vars.colab = config.colab
+    global_vars.tpu = config.colab
 
     # making sure that config parameters are ok
     if config.model_type not in ['tester', 'levnet', 'vgg-16', 'vgg-19', 'inception-v3']:
