@@ -13,6 +13,7 @@ import torchvision
 from torch.utils.tensorboard import SummaryWriter
 import matplotlib.pyplot as plt
 
+from IPython.display import display
 from IPython.display import clear_output
 
 def set_seed(seed):
