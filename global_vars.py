@@ -10,6 +10,7 @@ def init():
     global console, tensorboard
     console = None
     tensorboard = None
+    colab = None
 
 def cls():
     os.system('clear' if os.name=='posix' else 'cls')

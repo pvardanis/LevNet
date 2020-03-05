@@ -35,6 +35,7 @@ def main(config):
     # set global_vars
     global_vars.console = config.console
     global_vars.tensorboard = config.tensorboard
+    global_vars.colab = config.colab
 
     # making sure that config parameters are ok
     if config.model_type not in ['tester', 'levnet', 'vgg-16', 'vgg-19', 'inception-v3']:
@@ -102,6 +103,7 @@ if __name__ == '__main__':
     # global_vars
     parser.add_argument('--console', action='store_true', default=False, help='True if using command prompt, False if using Jupyter.')
     parser.add_argument('--tensorboard', action='store_true', default=False, help='True if using tensorboard, else False.')
+    parser.add_argument('--colab', action='store_true', default=False, help='True if using tensorboard, else False.')
 
     config = parser.parse_args()
     main(config)

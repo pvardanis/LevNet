@@ -19,7 +19,13 @@ class Solver(object):
         super().__init__()
 
         # Global settings
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        if global_vars.colab:
+            import torch_xla
+            import torch_xla.core.xla_model as xm 
+
+            self.device = xm.xla_device()
+        else:
+            self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         # Always same
         self.criterion = nn.NLLLoss().to(self.device)
@@ -90,7 +96,7 @@ class Solver(object):
             # x = torch.randn(1, 1, 224, 224) # (256, 256, 3)
             # output = model(x)
             # print(output.shape)
-            return model.to(self.device)
+            return model
 
         elif self.model_type == 'tester': return Tester().to(self.device)
         elif self.model_type == 'levnet': return LevNet().to(self.device)
@@ -99,7 +105,7 @@ class Solver(object):
         m = RunManager(self.save_best_model, self.stop_early)
         for run in RunBuilder.get_runs(self.params):
             global_vars.cls()
-            network = self.build_model() # this returns a new instance of the network .to(self.device)
+            network = self.build_model().to(self.device) # this returns a new instance of the network .to(self.device)
             train_loader = torch.utils.data.DataLoader(self.train_set, num_workers=self.num_workers, batch_size=run.batch_size, shuffle=True)
             valid_loader = torch.utils.data.DataLoader(self.valid_set, num_workers=self.num_workers, batch_size=run.batch_size, shuffle=True)
             loaders = OrderedDict(train=train_loader, valid=valid_loader)
