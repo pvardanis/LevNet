@@ -19,7 +19,7 @@ class Solver(object):
         super().__init__()
 
         # Global settings
-        if global_vars.colab:
+        if global_vars.tpu:
             import torch_xla
             import torch_xla.core.xla_model as xm 
 

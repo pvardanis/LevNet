@@ -7,7 +7,7 @@ Update global variables
 import os
 
 def init():
-    global console, tensorboard
+    global console, tensorboard, colab
     console = None
     tensorboard = None
     colab = None
