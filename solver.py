@@ -114,7 +114,8 @@ class Solver(object):
                 # Train
                 network.train() # keep grads
                 m.begin_epoch()
-                print('\nEpoch: {}'.format(epoch+1))
+                print('\nEpoch {}'.format(epoch+1))
+                print('Train:'.format(epoch+1))
                 for batch_idx, (images, labels) in enumerate(Bar(loaders['train'])):
                     images, labels = images.to(self.device), labels.to(self.device)
                     optimizer.zero_grad()
@@ -127,8 +128,9 @@ class Solver(object):
                     m.track_num_correct(preds, labels, 'train')
                                     
                 # Validation
+                print('Valid:'.format(epoch+1))
                 network.eval() # skips dropout and batch_norm 
-                for batch_idx, (images, labels) in enumerate(loaders['valid']):
+                for batch_idx, (images, labels) in enumerate(Bar(loaders['valid'])):
                     images, labels = images.to(self.device), labels.to(self.device)
                     preds = network(images)
                     loss = self.criterion(preds, labels)
