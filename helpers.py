@@ -179,7 +179,10 @@ class RunManager(object):
         directory = os.path.dirname(file_path)
         
         # if no folder named 'results' then create one
-        os.makedirs(directory)
+        try:
+            os.stat(directory)
+        except:
+            os.mkdir(directory) 
 
         pd.DataFrame.from_dict(self.run_data).to_pickle(file_path) # save to pickle
 
