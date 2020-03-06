@@ -10,7 +10,8 @@ import os
 from helpers import *
 from models import *
 from barbar import Bar
-
+from google.colab import output
+                
 # Global variables
 set_seed(0)
 
@@ -107,7 +108,6 @@ class Solver(object):
             global_vars.cls() 
         else: 
             if global_vars.colab: 
-                print('sdadsd')
                 output.clear() 
             else: 
                 clear_output(wait=True)
