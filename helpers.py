@@ -84,13 +84,14 @@ class RunManager(object):
         if global_vars.tensorboard: # add graph and images to SummaryWriter()
             images_train, labels_train = next(iter(self.loaders['train']))
             images_train, labels_train = images_train.cuda(), labels_train.cuda()
-            grid_train = torchvision.utils.make_grid(images_train).cuda()
+            # grid_train = torchvision.utils.make_grid(images_train).cuda()
 
             images_valid, labels_valid = next(iter(self.loaders['valid']))
             images_valid, labels_valid = images_valid.cuda(), labels_valid.cuda()
-            grid_valid = torchvision.utils.make_grid(images_valid).cuda()
+            # grid_valid = torchvision.utils.make_grid(images_valid).cuda()
 
             if not global_vars.colab: # we don't want to store everything in colab, otherwise it crashes
+                print('adssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss')
                 self.tb['train'].add_image('images_train', grid_train) 
                 self.tb['valid'].add_image('images_valid', grid_valid) 
                 self.tb['train'].add_graph(self.network, images_train)
@@ -125,6 +126,7 @@ class RunManager(object):
 
             if not global_vars.colab: # we don't want to store everything in colab, otherwise it crashes
                 for name, param in self.network.named_parameters():
+                    print('dassdadasdsadsadsads')
                     self.tb['train'].add_histogram(name, param, self.epoch_count)
                     self.tb['train'].add_histogram(f'{name}.grad', param.grad, self.epoch_count)
 
