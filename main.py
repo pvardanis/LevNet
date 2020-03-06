@@ -36,6 +36,7 @@ def main(config):
     global_vars.console = config.console
     global_vars.tensorboard = config.tensorboard
     global_vars.colab = config.colab
+    print(global_vars.colab)
     global_vars.tpu = config.tpu
 
     # making sure that config parameters are ok
