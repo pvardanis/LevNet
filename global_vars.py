@@ -7,9 +7,10 @@ Update global variables
 import os
 
 def init():
-    global console, tensorboard, tpu
+    global console, tensorboard, colab, tpu
     console = None
     tensorboard = None
+    colab = None
     tpu = None
 
 def cls():
