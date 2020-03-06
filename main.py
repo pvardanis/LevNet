@@ -36,7 +36,6 @@ def main(config):
     global_vars.console = config.console
     global_vars.tensorboard = config.tensorboard
     global_vars.colab = config.colab
-    print(global_vars.colab)
     global_vars.tpu = config.tpu
 
     # making sure that config parameters are ok
@@ -49,7 +48,7 @@ def main(config):
         return
 
     transform = transforms.Compose([#transforms.RandomRotation(30),
-                                    # transforms.RandomResizedCrop(224), # comment this if using Tester
+                                    transforms.RandomResizedCrop(224), # comment this if using Tester
                                     # transforms.RandomHorizontalFlip(),
                                     # transforms.RandomVerticalFlip(),
                                     transforms.ToTensor(),
