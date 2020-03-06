@@ -15,7 +15,6 @@ import matplotlib.pyplot as plt
 
 from IPython.display import display
 from IPython.display import clear_output
-from google.colab import output
 
 pd.set_option('display.max_columns',1000)
 pd.set_option('display.max_rows',1000)
@@ -154,8 +153,7 @@ class RunManager(object):
             global_vars.cls() # clear console output
             print(df)            
         else:
-            if global_vars.colab: output.clear() 
-            else: clear_output(wait=True) # update cell output for each epoch
+            clear_output(wait=True) # update cell output for each epoch
             display(df)
                 
     def track_loss(self, loss, data='train'):

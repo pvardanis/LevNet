@@ -10,7 +10,7 @@ import os
 from helpers import *
 from models import *
 from barbar import Bar
-from google.colab import output
+from IPython.display import clear_output
                 
 # Global variables
 set_seed(0)
@@ -107,10 +107,7 @@ class Solver(object):
         if global_vars.console: 
             global_vars.cls() 
         else: 
-            if global_vars.colab: 
-                output.clear() 
-            else: 
-                clear_output(wait=True)
+            clear_output(wait=True)
         for run in RunBuilder.get_runs(self.params):
             network = self.build_model().to(self.device) # this returns a new instance of the network .to(self.device)
             train_loader = torch.utils.data.DataLoader(self.train_set, num_workers=self.num_workers, batch_size=run.batch_size, shuffle=True)
