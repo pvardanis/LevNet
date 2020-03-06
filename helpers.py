@@ -180,11 +180,8 @@ class RunManager(object):
         directory = os.path.dirname(file_path)
         
         # if no folder named 'results' then create one
-        try:
-            os.stat(directory)
-        except:
-            os.mkdir(directory)       
-
+        os.makedirs(directory)
+        
         pd.DataFrame.from_dict(self.run_data).to_pickle(file_path) # save to pickle
 
 class EarlyStopping:
