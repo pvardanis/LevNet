@@ -154,7 +154,8 @@ class RunManager(object):
             global_vars.cls() # clear console output
             print(df)            
         else:
-            if global_vars.colab: output.clear() else: clear_output(wait=True) # update cell output for each epoch
+            if global_vars.colab: output.clear() 
+            else: clear_output(wait=True) # update cell output for each epoch
             display(df)
                 
     def track_loss(self, loss, data='train'):
