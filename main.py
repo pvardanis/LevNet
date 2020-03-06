@@ -47,7 +47,7 @@ def main(config):
         return
 
     transform = transforms.Compose([#transforms.RandomRotation(30),
-                                    transforms.RandomResizedCrop(224), # comment this if using Tester
+                                    # transforms.RandomResizedCrop(224), # comment this if using Tester
                                     # transforms.RandomHorizontalFlip(),
                                     # transforms.RandomVerticalFlip(),
                                     transforms.ToTensor(),
