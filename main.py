@@ -73,15 +73,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
    
     # model hyper-parameters (optional)
-    parser.add_argument('--image_size', type=int, default=224, help='w x h of input image.')
-    parser.add_argument('--input_ch', type=int, default=2, help='Number of channels of input image. ')
+    parser.add_argument('--image_size', type=int, default=224, help='w x h of the input image.')
+    parser.add_argument('--input_ch', type=int, default=2, help='Number of channels of the input image. ')
     parser.add_argument('--output_ch', type=int, default=512, help='Number of output nodes.')
     
     # training hyper-parameters (optional)
     parser.add_argument('--num_epochs', type=int, default=100, help='Number of epochs.')
     parser.add_argument('--num_epochs_decay', type=int, default=70, help='Threshold for learning rate decay.')
     parser.add_argument('--batch_size', nargs='+', type=int, default=1, help='Batch size for each pass.') 
-    parser.add_argument('--num_workers', type=int, default=0, help='Number of workers for dataloader.')
+    parser.add_argument('--num_workers', type=int, default=4, help='Number of workers for dataloader.')
     parser.add_argument('--lr', nargs='+', type=float, default=0.0002, help='Learning rate.')
     parser.add_argument('--lr_decay', type=float, default=0, help='Learning rate decay.') 
     parser.add_argument('--optimizers', nargs='+', type=str.lower, default=['adam'], help='List of optimizers: Adam/SGD.') 

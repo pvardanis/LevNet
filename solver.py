@@ -84,19 +84,6 @@ class Solver(object):
             for param in model.features[1:].parameters(): # disable grad for trained layers
                 param.requires_grad = False
 
-            # make sure that params are freezed the correct way            
-            # for param in model.features[1:].parameters(): # disable grad for trained layers
-            #     if param.requires_grad == True: print("ERROR: params not freezed in features!")
-            
-            # for param in model.features[0].parameters():
-            #     if param.requires_grad == False: print("ERROR: params freezed in first_conv_layer")
-
-            # for param in model.classifier.parameters():
-            #     if param.requires_grad == False: print("ERROR: params freezed in classifier")
-
-            # x = torch.randn(1, 1, 224, 224) # (256, 256, 3)
-            # output = model(x)
-            # print(output.shape)
             return model
 
         elif self.model_type == 'tester': return Tester().to(self.device)
