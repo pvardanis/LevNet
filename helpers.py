@@ -309,10 +309,8 @@ class CustomDataset(Dataset):
         self.path = path
         self.num_files = len(os.listdir(self.path+'/phases'))
         self.file = h5py.File(self.path+'/data.h5', 'r')
-        self.transform = transforms.Compose([
-                            transforms.Normalize([0.485, 0.456, 0.406],
-                            [0.229, 0.224, 0.225])
-                        ]),        
+        self.transform = transforms.Normalize([0.485, 0.456, 0.406],
+                                              [0.229, 0.224, 0.225])
 
     def __getitem__(self, index):
         image = self.file['pos_{}'.format(index)][()]
