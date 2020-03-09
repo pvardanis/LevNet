@@ -313,7 +313,6 @@ class CustomDataset(Dataset):
         target = self.file['phases_{}'.format(index)][()]
         target = torch.from_numpy(target).reshape(-1).type(torch.DoubleTensor)
 
-        from torch import
         image = Variable(image)
         target = Variable(target)
         print(image.is_cuda, target.is_cuda)
