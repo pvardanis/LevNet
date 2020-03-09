@@ -9,6 +9,7 @@ from datetime import datetime
 import os, shutil, h5py
 import random
 import torch
+from torch.autograd import Variable
 from torch.utils.data.dataset import Dataset  # For custom data-sets
 import torchvision.transforms as transforms
 from PIL import Image
@@ -312,6 +313,7 @@ class CustomDataset(Dataset):
         target = self.file['phases_{}'.format(index)][()]
         target = torch.from_numpy(target).reshape(-1).type(torch.DoubleTensor)
 
+        from torch import
         image = Variable(image)
         target = Variable(target)
         print(image.is_cuda, target.is_cuda)
