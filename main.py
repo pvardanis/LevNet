@@ -67,9 +67,8 @@ def main(config):
         train_set, valid_set = prepare_sets(config.data_path, percent=.9)
 
     solver = Solver(train_set, valid_set, test_set=None, config=config)
-    print(solver.build_model())
-    # if config.mode == 'train':
-    #     solver.train()
+    if config.mode == 'train':
+        solver.train()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
