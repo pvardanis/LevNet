@@ -107,8 +107,8 @@ class Solver(object):
                 print('\nTrain:\n')
                 for batch_idx, (images, labels) in enumerate(Bar(loaders['train'])):
                     images, labels = images.to(self.device), labels.to(self.device)
-                    images, labels = images.float(), labels.float()
                     optimizer.zero_grad()
+                    print(images.shape, type(images))
                     preds = network(images)
                     loss = self.criterion(preds, labels)
                     loss.backward()
