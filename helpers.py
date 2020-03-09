@@ -311,7 +311,7 @@ class CustomDataset(Dataset):
         
         target = self.file['phases_{}'.format(index)][()]
         target = torch.from_numpy(target).reshape(-1).type(torch.DoubleTensor)
-        
+        print(image.shape, target.shape)
         return image, target
 
     def __len__(self):  # return count of sample we have
