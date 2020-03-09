@@ -20,7 +20,7 @@ class Solver(object):
         super().__init__()
 
         # Global settings
-        if global_vars.tpu:
+        if config.tpu:
             import torch_xla
             import torch_xla.core.xla_model as xm 
 
@@ -66,26 +66,18 @@ class Solver(object):
                 
     def build_model(self):
 
-        if self.model_type in ['vgg-16', 'vgg-19']:
+        if self.model_type in ['vgg-16', 'vgg-16-bn']:
             
             assert self.image_size == 224, "ERROR: Wrong image size."
-            model = torchvision.models.vgg16(pretrained=True) if self.model_type == 'vgg-16' else torchvision.models.vgg19(pretrained=True)
-            if self.input_ch != 3:
-                first_conv_layer = [nn.Conv2d(self.input_ch, 3, kernel_size=3, stride=1, padding=1, dilation=1, groups=1, bias=True)]
-                first_conv_layer.extend(list(model.features))  
-                model.features= nn.Sequential(*first_conv_layer)  
 
-            model.classifier[-1] = nn.Linear(4096, 1000)
-            model.classifier.add_module('7', nn.ReLU())
-            model.classifier.add_module('8', nn.Dropout(p=0.5, inplace=False))
-            model.classifier.add_module('9', nn.Linear(1000, self.output_ch))
-            model.classifier.add_module('10', nn.LogSoftmax(dim=1))
+            model = torchvision.models.vgg16(pretrained=True) if self.model_type == 'vgg-16' else torchvision.models.vgg16_bn(pretrained=True)
+            num_features = model.classifier[6].in_features
+            features = list(model.classifier.children())[:-3] # Remove last layer and non-linearity
+            features.extend([nn.Linear(num_features, self.output_ch)]) # Add our layer with output_ch
+            model.classifier = nn.Sequential(*features) # Replace the model classifier
             
-            for param in model.features[1:].parameters(): # disable grad for trained layers
-                param.requires_grad = False
-
             return model
-
+            
         elif self.model_type == 'tester': return Tester().to(self.device)
         elif self.model_type == 'levnet': return LevNet().to(self.device)
     

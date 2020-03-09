@@ -8,7 +8,8 @@ import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from collections import OrderedDict
 import matplotlib.pyplot as plt
-from helpers import test_model
+from helpers import test_model, CustomDataset, prepare_sets
+import glob
 
 set_seed(0)
 
@@ -39,7 +40,7 @@ def main(config):
     global_vars.tpu = config.tpu
 
     # making sure that config parameters are ok
-    if config.model_type not in ['tester', 'levnet', 'vgg-16', 'vgg-19', 'inception-v3']:
+    if config.model_type not in ['tester', 'levnet', 'vgg-16', 'vgg-16-bn']:
         print('ERROR: model_type should be selected from the available models: Tester/LevNet/VGG-16/VGG-19/Inception-v3.')
         return
 
@@ -47,7 +48,8 @@ def main(config):
         print('ERROR: optimizer should be selected from the available optimizers: Adam/SGD.')
         return
 
-    transform = transforms.Compose([#transforms.RandomRotation(30),
+    if config.model_type == 'tester': 
+        transform = transforms.Compose([#transforms.RandomRotation(30),
                                     transforms.Resize(224), # comment this if using Tester
                                     # transforms.RandomHorizontalFlip(),
                                     # transforms.RandomVerticalFlip(),
@@ -55,26 +57,30 @@ def main(config):
                                     transforms.Normalize([0.5], [0.5]),
                                     ])
 
-    dataset = datasets.FashionMNIST(
-                        root='./data',
-                        train=True,
-                        download=True,
-                        transform=transform)
-    
-    train_set, valid_set = torch.utils.data.random_split(dataset, [50000, 10000])
+        dataset = datasets.FashionMNIST(
+                            root='./data',
+                            train=True,
+                            download=True,
+                            transform=transform)
+
+        train_set, valid_set = torch.utils.data.random_split(dataset, [50000, 10000])
+    else:
+        folder_pos = glob.glob(config.data_path+'/pos/*.bmp')
+        folder_phases = glob.glob(config.data_path+'/phases/*.bmp')
+        train_set, valid_set = prepare_sets(folder_pos, folder_phases, percent=.9)
 
     solver = Solver(train_set, valid_set, test_set=None, config=config)
-    # model = solver.build_model()
-    # test_model(model, train_set)
-    if config.mode == 'train':
-        solver.train()
+    model = solver.build_model()
+    # # test_model(model, train_set)
+    # if config.mode == 'train':
+    #     solver.train()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
    
     # model hyper-parameters (optional)
     parser.add_argument('--image_size', type=int, default=224, help='w x h of the input image.')
-    parser.add_argument('--input_ch', type=int, default=2, help='Number of channels of the input image. ')
+    parser.add_argument('--input_ch', type=int, default=3, help='Number of channels of the input image. ')
     parser.add_argument('--output_ch', type=int, default=512, help='Number of output nodes.')
     
     # training hyper-parameters (optional)
@@ -96,10 +102,8 @@ if __name__ == '__main__':
     parser.add_argument('--mode', type=str.lower, default='train', help='train/test')
     parser.add_argument('--model_type', type=str.lower, default='tester', help='Tester/LevNet/VGG-16/VGG-19/Inception-v3') 
     parser.add_argument('--model_path', type=str, default='./models')
-    parser.add_argument('--train_path', type=str, default='./dataset/train/')
-    parser.add_argument('--valid_path', type=str, default='./dataset/valid/')
-    parser.add_argument('--test_path', type=str, default='./dataset/test/')
-    parser.add_argument('--result_path', type=str, default='./results/')
+    parser.add_argument('--data_path', type=str, default='./images')
+    parser.add_argument('--result_path', type=str, default='./results')
 
     # global_vars
     parser.add_argument('--console', action='store_true', default=False, help='True if using command prompt, False if using Jupyter.')

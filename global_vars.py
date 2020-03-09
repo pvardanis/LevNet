@@ -7,11 +7,10 @@ Update global variables
 import os
 
 def init():
-    global console, tensorboard, colab, tpu
+    global console, tensorboard, colab
     console = None
     tensorboard = None
     colab = None
-    tpu = None
 
 def cls():
     os.system('clear' if os.name=='posix' else 'cls')

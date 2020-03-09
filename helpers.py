@@ -6,9 +6,12 @@ from collections import namedtuple
 from itertools import product
 import time
 from datetime import datetime
-import os
+import os, shutil
 import random
 import torch
+from torch.utils.data.dataset import Dataset  # For custom data-sets
+import torchvision.transforms as transforms
+from PIL import Image
 import torchvision
 from torch.utils.tensorboard import SummaryWriter
 import matplotlib.pyplot as plt
@@ -246,3 +249,53 @@ def test_model(model, dataset):
     print("Input shape: {}".format(images[0].unsqueeze(dim=0).shape))
     output = model(images[0].unsqueeze(dim=0).to('cuda'))
     print(output, output.shape)
+
+def arrange_images():
+
+    path = './images'
+    assert os.path.isdir(path), "ERROR: Data not found!"
+    
+    root = os.listdir(path)
+    path_pos = path + '/pos'
+    path_phases = path + '/phases'    
+
+    if not os.path.exists(path_pos):
+        os.makedirs(path_pos)
+    if not os.path.exists(path_phases):
+        os.makedirs(path_phases)
+
+    for image in root:
+        if image.startswith('Phase'):
+            shutil.move(os.path.join('./images', image), os.path.join(path_phases, image))
+        if image.startswith('Position'):
+            shutil.move(os.path.join('./images', image), os.path.join(path_pos, image))
+
+    listA = os.listdir(path_pos)
+    listA.sort()
+    listB = os.listdir(path_phases)
+    listB.sort()
+
+def prepare_sets(image_path, target_path, percent=.9):
+    dataset = CustomDataset(image_path, target_path)
+    percent = int(len(dataset) * percent)
+    train_set, valid_set = torch.utils.data.random_split(dataset, [percent, len(dataset) - percent])
+    
+    return train_set, valid_set 
+
+class CustomDataset(Dataset):
+    def __init__(self, image_path, target_path):
+        self.image_path = image_path
+        self.target_path = target_path
+        self.transform = transforms.ToTensor()
+
+    def __getitem__(self, index):
+        image = Image.open(self.image_path[index])
+        image = self.transform(image)
+        
+        target = Image.open(self.target_path[index])
+        target = self.transform(target).reshape(-1)
+
+        return image, target
+
+    def __len__(self):  # return count of sample we have
+        return len(self.image_path)
