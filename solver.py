@@ -89,7 +89,6 @@ class Solver(object):
             clear_output(wait=True)
         for run in RunBuilder.get_runs(self.params):
             network = self.build_model().to(self.device) # this returns a new instance of the network .to(self.device)
-            print(network)
             train_loader = torch.utils.data.DataLoader(self.train_set, num_workers=self.num_workers, batch_size=run.batch_size, shuffle=True)
             valid_loader = torch.utils.data.DataLoader(self.valid_set, num_workers=self.num_workers, batch_size=run.batch_size, shuffle=True)
             loaders = OrderedDict(train=train_loader, valid=valid_loader)
