@@ -293,7 +293,8 @@ def prepare_sets(path='./images', percent=.9):
     dataset = CustomDataset(path)
     percent = int(len(dataset) * percent)
     train_set, valid_set = torch.utils.data.random_split(dataset, [percent, len(dataset) - percent])
-
+    print(Variable(images).is_cuda, Variable(labels).is_cuda)
+                    
     return train_set, valid_set 
 
 class CustomDataset(Dataset):
