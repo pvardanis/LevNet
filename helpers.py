@@ -316,7 +316,7 @@ class CustomDataset(Dataset):
         
         target = self.file['phases_{}'.format(index)][()] #* 2 * np.pi
         target = torch.from_numpy(target).reshape(-1).type(torch.DoubleTensor)
-        print(target)
+        print(image.max(), target.max())
 
         return image, target
 
