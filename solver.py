@@ -33,7 +33,7 @@ class Solver(object):
             self.criterion = nn.MSELoss().to(self.device)
         elif config.loss == 'l1':
             self.criterion = nn.L1Loss().to(self.device)
-        elif config.loss == '2pi'
+        elif config.loss == '2pi':
             self.criterion = MSE_2pi.to(self.device) # my custom loss
 
         self.optimizers = OrderedDict(adam=optim.Adam, sgd=optim.SGD)
