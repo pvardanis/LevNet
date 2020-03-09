@@ -293,6 +293,7 @@ def prepare_sets(path='./images', percent=.9):
     dataset = CustomDataset(path)
     percent = int(len(dataset) * percent)
     train_set, valid_set = torch.utils.data.random_split(dataset, [percent, len(dataset) - percent])
+    print(len(train_set), len(valid_set))
     
     return train_set, valid_set 
 
@@ -311,7 +312,7 @@ class CustomDataset(Dataset):
 
         target = self.file['phases_{}'.format(index)][()]
         target = torch.from_numpy(target).reshape(-1).type(torch.DoubleTensor)
-        print(image.shape, target.shape)
+        
         return image, target
 
     def __len__(self):  # return count of sample we have
