@@ -99,6 +99,7 @@ class Solver(object):
                 optimizer = self.optimizers[run.optimizer](network.parameters(), lr=run.lr, momentum=self.momentum)
 
             m.begin_run(run, network, loaders)
+            print("sdadsasda")
             for epoch in range(self.num_epochs):
                 # Train
                 network.train() # keep grads
