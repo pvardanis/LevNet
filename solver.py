@@ -88,7 +88,7 @@ class Solver(object):
         else: 
             pass#clear_output(wait=True)
         for run in RunBuilder.get_runs(self.params):
-            network = self.build_model().to(self.device) # this returns a new instance of the network .to(self.device)
+            network = self.build_model().to(self.deviced, type=torch.float) # this returns a new instance of the network .to(self.device)
             train_loader = torch.utils.data.DataLoader(self.train_set, num_workers=self.num_workers, batch_size=run.batch_size, shuffle=True)
             valid_loader = torch.utils.data.DataLoader(self.valid_set, num_workers=self.num_workers, batch_size=run.batch_size, shuffle=True)
             loaders = OrderedDict(train=train_loader, valid=valid_loader)
@@ -106,13 +106,7 @@ class Solver(object):
                 print('\nEpoch {}'.format(epoch+1))
                 print('\nTrain:\n')
                 for batch_idx, (images, labels) in enumerate(Bar(loaders['train'])):
-                    images, labels = images.to(self.device), labels.to(self.device)
-
-                    images = Variable(images)
-                    labels = Variable(labels)
-                    print(images.is_cuda, labels.is_cuda)
-                    
-                    
+                    images, labels = images.to(self.device, type=torch.float), labels.to(self.device, type=torch.float)
                     optimizer.zero_grad()
                     preds = network(images)
                     loss = self.criterion(preds, labels)
