@@ -68,8 +68,8 @@ def main(config):
 
     solver = Solver(train_set, valid_set, test_set=None, config=config)
     print(solver.build_model())
-    # if config.mode == 'train':
-    #     solver.train()
+    if config.mode == 'train':
+        solver.train()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
