@@ -317,9 +317,9 @@ class CustomDataset(Dataset):
         image = torch.from_numpy(image.transpose((2, 0, 1))).type(torch.DoubleTensor)
         image = self.transform(image)
         
-        target = self.file['phases_{}'.format(index)][()] #* 2 * np.pi
+        target = self.file['phases_{}'.format(index)][()] 
         target = torch.from_numpy(target).reshape(-1).type(torch.DoubleTensor)
-        target = target / target.max * 2 * np.pi
+        target = target / target.sum(0).expand_as(target) * 2 * np.pi
         print(image.max(), image.shape, target.max(), target.shape)
 
         return image, target
