@@ -108,9 +108,9 @@ class Solver(object):
                 for batch_idx, (images, labels) in enumerate(Bar(loaders['train'])):
                     images, labels = images.to(self.device), labels.to(self.device)
 
-                    image = Variable(image)
+                    images = Variable(images)
                     labels = Variable(labels)
-                    print(image.is_cuda, labels.is_cuda)
+                    print(images.is_cuda, labels.is_cuda)
                     
                     
                     optimizer.zero_grad()
