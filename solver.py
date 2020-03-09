@@ -121,7 +121,7 @@ class Solver(object):
                 network.eval() # skips dropout and batch_norm 
                 with torch.no_grad():
                     for batch_idx, (images, labels) in enumerate(Bar(loaders['valid'])):
-                        images, labels = images.to(self.device), labels.to(self.device)
+                        images, labels = images.to(self.device, dtype=torch.float), labels.to(self.device, dtype=torch.float)
                         preds = network(images)
                         loss = self.criterion(preds, labels)
 
