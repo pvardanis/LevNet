@@ -109,6 +109,8 @@ class Solver(object):
                     images, labels = images.to(self.device), labels.to(self.device)
                     optimizer.zero_grad()
                     preds = network(images)
+                    print("Labels:", type(labels), labels.shape)
+                    print("Preds:", type(preds), preds.shape)
                     loss = self.criterion(preds, labels)
                     loss.backward()
                     optimizer.step()
