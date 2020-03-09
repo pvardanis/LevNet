@@ -28,8 +28,12 @@ class Solver(object):
         else:
             self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        # Always same
-        self.criterion = nn.MSELoss().to(self.device)
+        # Loss/Optimizer
+        if config.loss == 'mse':
+            self.criterion = nn.MSELoss().to(self.device)
+        elif config.loss == 'l1':
+            self.criterion = nn.L1Loss().to(self.device)
+
         self.optimizers = OrderedDict(adam=optim.Adam, sgd=optim.SGD)
 
         # Data Loaders

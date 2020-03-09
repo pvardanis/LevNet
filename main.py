@@ -83,6 +83,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_epochs_decay', type=int, default=70, help='Threshold for learning rate decay.')
     parser.add_argument('--batch_size', nargs='+', type=int, default=1, help='Batch size for each pass.') 
     parser.add_argument('--num_workers', type=int, default=0, help='Number of workers for dataloader.')
+    parser.add_argument('--loss', type=str.lower, default='mse', help='List of loss functions: MSE/L1.')
     parser.add_argument('--lr', nargs='+', type=float, default=0.0002, help='Learning rate.')
     parser.add_argument('--lr_decay', type=float, default=0, help='Learning rate decay.') 
     parser.add_argument('--optimizers', nargs='+', type=str.lower, default=['adam'], help='List of optimizers: Adam/SGD.') 
