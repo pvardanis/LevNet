@@ -76,10 +76,10 @@ class Solver(object):
             features.extend([nn.Linear(num_features, self.output_ch)]) # Add our layer with output_ch
             model.classifier = nn.Sequential(*features) # Replace the model classifier
             
-            return model
+            return model.to(self.device)
 
-        elif self.model_type == 'tester': return Tester()
-        elif self.model_type == 'levnet': return LevNet()
+        elif self.model_type == 'tester': return Tester().to(self.device)
+        elif self.model_type == 'levnet': return LevNet().to(self.device)
     
     def train(self):
         m = RunManager(self.save_best_model, self.stop_early)
@@ -88,7 +88,7 @@ class Solver(object):
         else: 
             clear_output(wait=True)
         for run in RunBuilder.get_runs(self.params):
-            network = self.build_model().to(self.device) # this returns a new instance of the network .to(self.device)
+            network = self.build_model() # this returns a new instance of the network .to(self.device)
             train_loader = torch.utils.data.DataLoader(self.train_set, num_workers=self.num_workers, batch_size=run.batch_size, shuffle=True)
             valid_loader = torch.utils.data.DataLoader(self.valid_set, num_workers=self.num_workers, batch_size=run.batch_size, shuffle=True)
             loaders = OrderedDict(train=train_loader, valid=valid_loader)
@@ -107,7 +107,6 @@ class Solver(object):
                 print('\nTrain:\n')
                 for batch_idx, (images, labels) in enumerate(Bar(loaders['train'])):
                     images, labels = images.to(self.device), labels.to(self.device)
-                    print(next(network.parameters()).is_cuda, Variable(images).is_cuda, Variable(labels).is_cuda)
                     optimizer.zero_grad()
                     preds = network(images)
                     loss = self.criterion(preds, labels)
