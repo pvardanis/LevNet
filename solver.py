@@ -100,7 +100,6 @@ class Solver(object):
                 optimizer = self.optimizers[run.optimizer](network.parameters(), lr=run.lr, momentum=self.momentum)
 
             m.begin_run(run, network, loaders)
-            print("sdadsasda")
             for epoch in range(self.num_epochs):
                 # Train
                 network.train() # keep grads
@@ -118,7 +117,7 @@ class Solver(object):
                     optimizer.step()
                     
                     m.track_loss(loss, 'train')
-                    m.track_num_correct(preds, labels, 'train')
+                    # m.track_num_correct(preds, labels, 'train')
                                     
                 # Validation
                 print('\nValid:\n')

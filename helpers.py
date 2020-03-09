@@ -111,19 +111,19 @@ class RunManager(object):
 
     def end_epoch(self):
         loss_train = self.epoch_loss['train'] / len(self.loaders['train'].dataset)
-        accuracy_train = self.epoch_num_correct['train'] / len(self.loaders['train'].dataset)
+        # accuracy_train = self.epoch_num_correct['train'] / len(self.loaders['train'].dataset)
 
         loss_valid = self.epoch_loss['valid'] / len(self.loaders['valid'].dataset)
-        accuracy_valid = self.epoch_num_correct['valid'] / len(self.loaders['valid'].dataset)
+        # accuracy_valid = self.epoch_num_correct['valid'] / len(self.loaders['valid'].dataset)
         
         epoch_duration = time.time() - self.epoch_start_time
         run_duration = time.time() - self.run_start_time
 
         if global_vars.tensorboard: # add graphs to SummaryWriter()
             self.tb['train'].add_scalar('Loss', loss_train, self.epoch_count)
-            self.tb['train'].add_scalar('Accuracy', accuracy_train, self.epoch_count)
+            # self.tb['train'].add_scalar('Accuracy', accuracy_train, self.epoch_count)
             self.tb['valid'].add_scalar('Loss', loss_valid, self.epoch_count)
-            self.tb['valid'].add_scalar('Accuracy', accuracy_valid, self.epoch_count)
+            # self.tb['valid'].add_scalar('Accuracy', accuracy_valid, self.epoch_count)
 
             if not global_vars.colab: # we don't want to store everything in colab, otherwise it crashes
                 for name, param in self.network.named_parameters():
@@ -134,9 +134,9 @@ class RunManager(object):
         results["run"] = self.run_count
         results["epoch"] = self.epoch_count
         results["train loss"] = loss_train
-        results["train accuracy"] = accuracy_train
+        # results["train accuracy"] = accuracy_train
         results["valid loss"] = loss_valid
-        results["valid accuracy"] = accuracy_valid 
+        # results["valid accuracy"] = accuracy_valid 
         results["epoch duration"] = epoch_duration
         results["run duration"] = run_duration
 
