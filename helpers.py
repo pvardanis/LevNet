@@ -252,7 +252,9 @@ def test_model(model, dataset):
     print(output, output.shape)
 
 def arrange_images():
-
+    '''
+    Move position and phases *.bmp images to seperate folders
+    '''
     path = './images'
     assert os.path.isdir(path), "ERROR: Data not found!"
     

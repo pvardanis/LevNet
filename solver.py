@@ -126,7 +126,7 @@ class Solver(object):
                         loss = self.criterion(preds, labels)
 
                         m.track_loss(loss, 'valid')
-                        m.track_num_correct(preds, labels, 'valid')
+                        # m.track_num_correct(preds, labels, 'valid')
                     
                 m.end_epoch()
                 if m._get_early_stop():
