@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 from IPython.display import display
 from IPython.display import clear_output
 
+torch.multiprocessing.set_start_method('spawn')
 pd.set_option('display.max_columns',1000)
 pd.set_option('display.max_rows',1000)
 
@@ -304,6 +305,10 @@ class CustomDataset(Dataset):
         self.path = path
         self.num_files = len(os.listdir(self.path+'/phases'))
         self.file = h5py.File(self.path+'/data.h5', 'r')
+
+        with h5py.File(self.file, 'r') as file:
+            self.n_images, self.channels,self.nx, self.ny = file[self.dataset_mode]['inputs'].shape
+            self.n_images_check, self.nfeatures = file[self.dataset_mode]['labels'].shape
 
     def __getitem__(self, index):
         image = self.file['pos_{}'.format(index)][()]
