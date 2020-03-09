@@ -135,10 +135,10 @@ class RunManager(object):
         results["run"] = self.run_count
         results["epoch"] = self.epoch_count
         results["train loss"] = loss_train
-        results["train phase error"] = np.sqrt(loss_train) / np.sqrt(512)
+        results["train phase error"] = np.sqrt(loss_train) * 256 / np.sqrt(512)
         # results["train accuracy"] = accuracy_train
         results["valid loss"] = loss_valid
-        results["valid phase error"] = np.sqrt(loss_valid) / np.sqrt(512)
+        results["valid phase error"] = np.sqrt(loss_valid) * 256 / np.sqrt(512)
         # results["valid accuracy"] = accuracy_valid 
         results["epoch duration"] = epoch_duration
         results["run duration"] = run_duration
