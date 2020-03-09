@@ -307,11 +307,11 @@ class CustomDataset(Dataset):
         self.file = h5py.File(self.path+'/data.h5', 'r')
 
     def __getitem__(self, index):
-        image = self.file['pos_{}'.format(index)][()].astype('float64')
+        image = self.file['pos_{}'.format(index)][()]
         image = torch.from_numpy(image.transpose((2, 0, 1)))
         
 
-        target = self.file['phases_{}'.format(index)][()].astype('float64')
+        target = self.file['phases_{}'.format(index)][()]
         target = torch.from_numpy(target).reshape(-1)
         
         return image, target
