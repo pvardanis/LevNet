@@ -32,7 +32,7 @@ def main(config):
     #                         num_workers=config.num_workers,
     #                         mode='test',
     #                         augmentation_prob=0.)
-    
+    torch.multiprocessing.set_start_method('spawn')
     # set global_vars
     global_vars.console = config.console
     global_vars.tensorboard = config.tensorboard

@@ -301,8 +301,6 @@ class CustomDataset(Dataset):
     Custom Dataset() that reads a .h5 file with our data and returns position and images torch vectors for the DataLoader().
     '''
     def __init__(self, path):
-        torch.multiprocessing.set_start_method('spawn')
-
         self.path = path
         self.num_files = len(os.listdir(self.path+'/phases'))
         self.file = h5py.File(self.path+'/data.h5', 'r')        
