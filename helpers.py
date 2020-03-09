@@ -308,11 +308,11 @@ class CustomDataset(Dataset):
 
     def __getitem__(self, index):
         image = self.file['pos_{}'.format(index)][()]
-        image = torch.from_numpy(image.transpose((2, 0, 1)))
+        image = torch.from_numpy(image.transpose((2, 0, 1))).type(torch.DoubleTensor)
         
 
         target = self.file['phases_{}'.format(index)][()]
-        target = torch.from_numpy(target).reshape(-1)
+        target = torch.from_numpy(target).reshape(-1).type(torch.DoubleTensor)
         
         return image, target
 
