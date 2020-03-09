@@ -155,10 +155,10 @@ class RunManager(object):
         df = pd.DataFrame.from_dict(self.run_data)
 
         if global_vars.console:
-            # global_vars.cls() # clear console output
+            global_vars.cls() # clear console output
             print(df)            
         else:
-            # clear_output(wait=True) # update cell output for each epoch
+            clear_output(wait=True) # update cell output for each epoch
             display(df)
                 
     def track_loss(self, loss, data='train'):
