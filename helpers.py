@@ -293,8 +293,7 @@ def prepare_sets(path='./images', percent=.9):
     dataset = CustomDataset(path)
     percent = int(len(dataset) * percent)
     train_set, valid_set = torch.utils.data.random_split(dataset, [percent, len(dataset) - percent])
-    print(len(train_set), len(valid_set))
-    
+
     return train_set, valid_set 
 
 class CustomDataset(Dataset):
@@ -303,20 +302,20 @@ class CustomDataset(Dataset):
     '''
     def __init__(self, path):
         self.path = path
+        self.num_files =len(os.listdir(path+'/phases'))
         self.file = h5py.File(self.path+'/data.h5', 'r')
 
     def __getitem__(self, index):
         image = self.file['pos_{}'.format(index)][()]
         image = torch.from_numpy(image.transpose((2, 0, 1))).type(torch.DoubleTensor)
         
-
         target = self.file['phases_{}'.format(index)][()]
         target = torch.from_numpy(target).reshape(-1).type(torch.DoubleTensor)
         
         return image, target
 
     def __len__(self):  # return count of sample we have
-        return len(self.path)
+        return self.num_files
 
 def create_h5(path='images'):
     '''
