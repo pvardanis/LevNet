@@ -29,7 +29,7 @@ class Solver(object):
             self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         # Always same
-        self.criterion = nn.MSELoss.to(self.device)
+        self.criterion = nn.MSELoss().to(self.device)
         self.optimizers = OrderedDict(adam=optim.Adam, sgd=optim.SGD)
 
         # Data Loaders
@@ -78,8 +78,8 @@ class Solver(object):
             
             return model
 
-        elif self.model_type == 'tester': return Tester().to(self.device)
-        elif self.model_type == 'levnet': return LevNet().to(self.device)
+        elif self.model_type == 'tester': return Tester()
+        elif self.model_type == 'levnet': return LevNet()
     
     def train(self):
         m = RunManager(self.save_best_model, self.stop_early)
