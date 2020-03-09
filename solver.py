@@ -33,6 +33,8 @@ class Solver(object):
             self.criterion = nn.MSELoss().to(self.device)
         elif config.loss == 'l1':
             self.criterion = nn.L1Loss().to(self.device)
+        elif config.loss == '2pi'
+            self.criterion = MSE_2pi.to(self.device) # my custom loss
 
         self.optimizers = OrderedDict(adam=optim.Adam, sgd=optim.SGD)
 
@@ -80,8 +82,8 @@ class Solver(object):
             features.extend([nn.Linear(num_features, self.output_ch)]) # Add our layer with output_ch
             model.classifier = nn.Sequential(*features) # Replace the model classifier
             
-            # for param in model.features.parameters(): # disable grad for trained layers
-            #     param.requires_grad = False
+            for param in model.features.parameters(): # disable grad for trained layers
+                param.requires_grad = False
 
             return model
 

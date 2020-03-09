@@ -356,4 +356,7 @@ def create_h5(path='images'):
                     compression="gzip",
                     compression_opts=9)
 
+def MSE_2pi(output, target):
+    loss = torch.mean(torch.fmod(output - target, 2 * pi)**2)
 
+    return loss
