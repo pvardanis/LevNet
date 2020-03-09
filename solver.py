@@ -84,9 +84,9 @@ class Solver(object):
     def train(self):
         m = RunManager(self.save_best_model, self.stop_early)
         if global_vars.console: 
-            global_vars.cls() 
+            pass# global_vars.cls() 
         else: 
-            clear_output(wait=True)
+            pass#clear_output(wait=True)
         for run in RunBuilder.get_runs(self.params):
             network = self.build_model().to(self.device) # this returns a new instance of the network .to(self.device)
             train_loader = torch.utils.data.DataLoader(self.train_set, num_workers=self.num_workers, batch_size=run.batch_size, shuffle=True)
