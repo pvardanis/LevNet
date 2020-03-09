@@ -6,7 +6,7 @@ from collections import namedtuple
 from itertools import product
 import time
 from datetime import datetime
-import os, shutil
+import os, shutil, h5py
 import random
 import torch
 from torch.utils.data.dataset import Dataset  # For custom data-sets
@@ -275,27 +275,81 @@ def arrange_images():
     listB = os.listdir(path_phases)
     listB.sort()
 
-def prepare_sets(image_path, target_path, percent=.9):
-    dataset = CustomDataset(image_path, target_path)
+def prepare_sets(path='./images', percent=.9):
+    '''
+    Loads a CustomDataset() from the path and returns a train set and a valid set randomly split with percent=.9 (default).
+
+    Inputs
+
+        path: path where images are stored.
+        percent: percent of train/valid random split.
+
+    Returns
+
+        train_set: set with training data.
+        valid_set: set with valid data.   
+
+    '''
+    dataset = CustomDataset(path)
+    loader = torch.utils.data.DataLoader(dataset, num_workers=0, batch_size=64, shuffle=True)
+    images, labels = next(iter(loader))
     percent = int(len(dataset) * percent)
     train_set, valid_set = torch.utils.data.random_split(dataset, [percent, len(dataset) - percent])
     
     return train_set, valid_set 
 
 class CustomDataset(Dataset):
-    def __init__(self, image_path, target_path):
-        self.image_path = image_path
-        self.target_path = target_path
-        self.transform = transforms.ToTensor()
+    '''
+    Custom Dataset() that reads a .h5 file with our data and returns position and images torch vectors for the DataLoader().
+    '''
+    def __init__(self, path):
+        self.path = path
+        self.file = h5py.File(self.path+'/data.h5', 'r')
 
     def __getitem__(self, index):
-        image = Image.open(self.image_path[index])
-        image = self.transform(image)
+        image = self.file['pos_{}'.format(index)][()].astype('float64')
+        image = torch.from_numpy(image.transpose((2, 0, 1)))
         
-        target = Image.open(self.target_path[index])
-        target = self.transform(target).reshape(-1)
 
+        target = self.file['phases_{}'.format(index)][()].astype('float64')
+        target = torch.from_numpy(target).reshape(-1)
+        
         return image, target
 
     def __len__(self):  # return count of sample we have
-        return len(self.image_path)
+        return len(self.path)
+
+def create_h5(path='images'):
+    '''
+    Converts .bpm images with positions and phases to a single h5 file. This makes computations for DataLoader() much faster.
+    '''
+    import glob
+    # load positions images
+    images = os.path.join(path, "pos")#
+    images = os.path.join(images, '*.bmp')
+    list_images = glob.glob(images)
+    # load phases images
+    targets = os.path.join(path, "phases")
+    targets = os.path.join(targets, "*.bmp")
+    list_targets = glob.glob(targets)
+
+    with h5py.File('./images/data.h5', 'w') as hf:
+        for i, img in enumerate(list_images):
+            # images
+            image = Image.open(img)
+            image_set = hf.create_dataset(
+                    name='pos_'+str(i),
+                    data=image,
+                    compression="gzip",
+                    compression_opts=9)
+        
+        for i, tgt in enumerate(list_targets):
+            # targets
+            target = Image.open(tgt)
+            target_set = hf.create_dataset(
+                    name='phases_'+str(i),
+                    data=target,
+                    compression="gzip",
+                    compression_opts=9)
+
+

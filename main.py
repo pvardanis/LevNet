@@ -65,9 +65,7 @@ def main(config):
 
         train_set, valid_set = torch.utils.data.random_split(dataset, [50000, 10000])
     else:
-        folder_pos = glob.glob(config.data_path+'/pos/*.bmp')
-        folder_phases = glob.glob(config.data_path+'/phases/*.bmp')
-        train_set, valid_set = prepare_sets(folder_pos, folder_phases, percent=.9)
+        train_set, valid_set = prepare_sets(config.data_path, percent=.9)
 
     solver = Solver(train_set, valid_set, test_set=None, config=config)
     
