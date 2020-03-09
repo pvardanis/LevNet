@@ -70,10 +70,9 @@ def main(config):
         train_set, valid_set = prepare_sets(folder_pos, folder_phases, percent=.9)
 
     solver = Solver(train_set, valid_set, test_set=None, config=config)
-    model = solver.build_model()
-    # # test_model(model, train_set)
-    # if config.mode == 'train':
-    #     solver.train()
+    
+    if config.mode == 'train':
+        solver.train()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
