@@ -23,7 +23,6 @@ pd.set_option('display.max_columns',1000)
 pd.set_option('display.max_rows',1000)
 
 def set_seed(seed):
-    torch.multiprocessing.set_start_method('spawn')
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
