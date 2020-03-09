@@ -315,6 +315,7 @@ class CustomDataset(Dataset):
         return image, target
 
     def __len__(self):  # return count of sample we have
+        import glob
         return len(glob.glob1(self.path+'/phases', '*.bmp'))
 
 def create_h5(path='images'):
