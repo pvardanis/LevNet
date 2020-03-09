@@ -292,7 +292,6 @@ def prepare_sets(path='./images', percent=.9):
     '''
     dataset = CustomDataset(path)
     percent = int(len(dataset) * percent)
-    train_set, valid_set = torch.utils.data.random_split(dataset, [percent, len(dataset) - percent])
     
     return train_set, valid_set 
 
