@@ -302,7 +302,7 @@ class CustomDataset(Dataset):
     '''
     def __init__(self, path):
         self.path = path
-        self.num_files =len(os.listdir(path+'/phases'))
+        self.num_files = len(os.listdir(self.path+'/phases'))
         self.file = h5py.File(self.path+'/data.h5', 'r')
 
     def __getitem__(self, index):
@@ -315,7 +315,7 @@ class CustomDataset(Dataset):
         return image, target
 
     def __len__(self):  # return count of sample we have
-        return self.num_files
+        return len(glob.glob1(self.path+'/phases', '*.bmp'))
 
 def create_h5(path='images'):
     '''
