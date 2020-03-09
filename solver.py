@@ -76,6 +76,9 @@ class Solver(object):
             features.extend([nn.Linear(num_features, self.output_ch)]) # Add our layer with output_ch
             model.classifier = nn.Sequential(*features) # Replace the model classifier
             
+            for param in model.features.parameters(): # disable grad for trained layers
+                param.requires_grad = False
+
             return model
 
         elif self.model_type == 'tester': return Tester()
