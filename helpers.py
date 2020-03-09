@@ -308,14 +308,20 @@ class CustomDataset(Dataset):
     def __init__(self, path):
         self.path = path
         self.num_files = len(os.listdir(self.path+'/phases'))
-        self.file = h5py.File(self.path+'/data.h5', 'r')        
+        self.file = h5py.File(self.path+'/data.h5', 'r')
+        self.transform = transforms.Compose([
+                            transforms.Normalize([0.485, 0.456, 0.406],
+                            [0.229, 0.224, 0.225])
+                        ]),        
 
     def __getitem__(self, index):
         image = self.file['pos_{}'.format(index)][()]
         image = torch.from_numpy(image.transpose((2, 0, 1))).type(torch.DoubleTensor)
+        image = self.transform(image)
         
         target = self.file['phases_{}'.format(index)][()] #* 2 * np.pi
         target = torch.from_numpy(target).reshape(-1).type(torch.DoubleTensor)
+        target = target / target.max * 2 * np.pi
         print(image.max(), image.shape, target.max(), target.shape)
 
         return image, target
