@@ -39,7 +39,7 @@ def main(config):
     global_vars.tensorboard = config.tensorboard
     global_vars.colab = config.colab
     global_vars.tpu = config.tpu
-
+    
     # making sure that config parameters are ok
     if config.model_type not in ['tester', 'levnet', 'vgg-16', 'vgg-16-bn']:
         print('ERROR: model_type should be selected from the available models: Tester/LevNet/VGG-16/VGG-19/Inception-v3.')
@@ -66,9 +66,13 @@ def main(config):
 
         train_set, valid_set = torch.utils.data.random_split(dataset, [50000, 10000])
     else:
-        train_set, valid_set = prepare_sets(config.data_path, percent=.9)        
+        train_set, valid_set = prepare_sets(config.data_path, percent=.9)   
+        loader = torch.utils.data.DataLoader(train_set, num_workers=0, batch_size=1, shuffle=True)
+        images, labels = next(iter(loader))
+            
 
-    # solver = Solver(train_set, valid_set, test_set=None, config=config)
+    solver = Solver(train_set, valid_set, test_set=None, config=config)
+    solver.build_model()
     # test = MyVgg()
     # print(test)
     # summary(test, (3, 224, 224))

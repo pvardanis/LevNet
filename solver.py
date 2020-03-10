@@ -39,6 +39,8 @@ class Solver(object):
             self.criterion = Atan 
         elif config.loss == 'cross_entropy':
             self.criterion = nn.CrossEntropyLoss()
+        elif config.loss == 'cos':
+            self.criterion = Cosine
 
         self.optimizers = OrderedDict(adam=optim.Adam, sgd=optim.SGD)
 
@@ -136,7 +138,7 @@ class Solver(object):
                     optimizer.step()
                     
                     m.track_loss(loss, 'train')
-                    # m.track_num_correct(preds, labels, 'train')
+                    if isinstance(network, MyVgg): m.track_num_correct(preds, labels, 'train')
                                     
                 # Validation
                 print('\nValid:\n')
@@ -154,7 +156,7 @@ class Solver(object):
                             loss = self.criterion(preds, labels)
 
                         m.track_loss(loss, 'valid')
-                        # m.track_num_correct(preds, labels, 'valid')
+                        if isinstance(network, MyVgg): m.track_num_correct(preds, labels, 'valid')
                     
                 m.end_epoch()
                 if m._get_early_stop():

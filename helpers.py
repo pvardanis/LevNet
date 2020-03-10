@@ -16,6 +16,7 @@ from PIL import Image
 import torchvision
 from torch.utils.tensorboard import SummaryWriter
 import matplotlib.pyplot as plt
+from models import *
 
 from IPython.display import display
 from IPython.display import clear_output
@@ -112,18 +113,22 @@ class RunManager(object):
 
     def end_epoch(self):
         loss_train = self.epoch_loss['train'] / len(self.loaders['train'].dataset)
-        accuracy_train = 100. * self.epoch_num_correct['train'] / len(self.loaders['train'].dataset) # accuracy for each phase classifier, tensor of (512, 1)
         loss_valid = self.epoch_loss['valid'] / len(self.loaders['valid'].dataset)
-        accuracy_valid = 100. * self.epoch_num_correct['valid'] / len(self.loaders['train'].dataset) # accuracy for each phase classifier, tensor of (512, 1)
         
+        if isinstance(self.network, MyVgg): # add this if network is MyVgg
+            accuracy_train = 100. * self.epoch_num_correct['train'] / len(self.loaders['train'].dataset) # accuracy for each phase classifier, tensor of (512, 1)
+            accuracy_valid = 100. * self.epoch_num_correct['valid'] / len(self.loaders['train'].dataset) # accuracy for each phase classifier, tensor of (512, 1)
+        
+
         epoch_duration = time.time() - self.epoch_start_time
         run_duration = time.time() - self.run_start_time
 
         if global_vars.tensorboard: # add graphs to SummaryWriter()
             self.tb['train'].add_scalar('Loss', loss_train, self.epoch_count)
             self.tb['valid'].add_scalar('Loss', loss_valid, self.epoch_count)
-            self.tb['train'].add_scalar('Accuracy', torch.mean(accuracy_train), self.epoch_count) # track mean accuracy across all classifiers
-            self.tb['valid'].add_scalar('Accuracy', torch.mean(accuracy_valid), self.epoch_count)
+            if isinstance(self.network, MyVgg):
+                self.tb['train'].add_scalar('Accuracy', torch.mean(accuracy_train), self.epoch_count) # track mean accuracy across all classifiers
+                self.tb['valid'].add_scalar('Accuracy', torch.mean(accuracy_valid), self.epoch_count)
             
             if not global_vars.colab: # we don't want to store everything in colab, otherwise it crashes
                 for name, param in self.network.named_parameters():
@@ -255,6 +260,15 @@ class CustomDataset(Dataset):
         
         target = torch.from_numpy(self.file['phases_{}'.format(index)][()]).float()       
         
+        # if self.model_type == 'vgg-16-bn': # uncommented this for old data
+        #     target = pd.DataFrame(target).astype(float)
+        #     print(target.shape)
+        #     target = target.idxmax(axis=1)
+        #     target = torch.tensor(target.values)
+
+
+        print(target.shape)
+
         return image, target
 
     def __len__(self):  # return count of sample we have
@@ -337,9 +351,16 @@ def test_model(model, dataset):
     output = model(images[0].unsqueeze(dim=0).to('cuda'))
     print(output, output.shape)
 
+# Custom losses
 def MSEWrap(output, target):
     loss = torch.mean(torch.fmod(output - target, 2 * np.pi) ** 2)
     return loss
 
 def Atan(output, target):
     return torch.mean(torch.abs(torch.atan2(torch.sin(target - output), torch.cos(target - output))))
+
+def Cosine(output, target):
+    '''
+    Cosine loss function. It's zero when output = target (or they differ by a multiple of 360 degrees)
+    '''
+    return 1.0 - torch.cos(output - target)
