@@ -309,19 +309,22 @@ class CustomDataset(Dataset):
         self.path = path
         self.num_files = len(os.listdir(self.path+'/phases'))
         self.file = h5py.File(self.path+'/data.h5', 'r')
-        self.transform = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                            std=[0.229, 0.224, 0.225])
+        self.transform = transforms.Compose([transforms.ToTensor(),
+                                        transforms.Normalize([0.485, 0.456, 0.406],
+                                        [0.229, 0.224, 0.225])])
+
 
     def __getitem__(self, index):
         image = self.file['pos_{}'.format(index)][()]
         image = torch.from_numpy(image.transpose((2, 0, 1))).type(torch.DoubleTensor)
         print(image.max())
         image = self.transform(image)
+        print(image.max())
         
         target = self.file['phases_{}'.format(index)][()] 
         target = torch.from_numpy(target).reshape(-1).type(torch.DoubleTensor)
         target = target / target.sum(0).expand_as(target) * 2 * np.pi
-        print(image.max(), image.shape, target.max(), target.shape)
+        # print(image.max(), image.shape, target.max(), target.shape)
 
         return image, target
 
@@ -335,7 +338,7 @@ def create_h5(path='images'):
     '''
     import glob
     # load positions images
-    images = os.path.join(path, "pos")#
+    images = os.path.join(path, "pos")
     images = os.path.join(images, '*.bmp')
     list_images = glob.glob(images)
     # load phases images
@@ -363,6 +366,6 @@ def create_h5(path='images'):
                     compression_opts=9)
 
 def MSE_2pi(output, target):
-    loss = torch.mean(torch.fmod(output - target, 2 * pi)**2)
+    loss = torch.mean(torch.fmod(output - target, 2 * pi) ** 2)
 
     return loss
