@@ -231,6 +231,33 @@ class EarlyStopping:
         torch.save(model.state_dict(), self.path+'/checkpoint.pt')
         self.val_loss_min = val_loss
 
+class CustomDataset(Dataset):
+    '''
+    Custom Dataset() that reads a .h5 file with our data and returns position and images torch vectors for the DataLoader().
+    '''
+    def __init__(self, path):
+        self.path = path
+        # self.num_files = len(os.listdir(self.path+'/phases'))
+        self.file = h5py.File(self.path+'/data.h5', 'r')
+        self.transform = transforms.Compose([transforms.ToTensor(),
+                                        transforms.Normalize([0.485, 0.456, 0.406],
+                                        [0.229, 0.224, 0.225])])
+                                        
+    def __getitem__(self, index):
+        image = self.file['pos_{}'.format(index)][()]
+        image = self.transform(image)
+        
+        target = self.file['phases_{}'.format(index)][()].reshape(-1)
+        target -= target.min()
+        target = np.true_divide(target, target.max())
+        target *= 2 * np.pi
+
+        return image, target
+
+    def __len__(self):  # return count of sample we have
+        # import glob
+        return 10000#len(glob.glob1(self.path+'/phases', '*.bmp'))
+
 def test_model(model, dataset):
     ''' 
     Tests model output for an input image.
@@ -292,33 +319,6 @@ def prepare_sets(path='./images', percent=.9):
     train_set, valid_set = torch.utils.data.random_split(dataset, [percent, len(dataset) - percent])
     
     return train_set, valid_set 
-
-class CustomDataset(Dataset):
-    '''
-    Custom Dataset() that reads a .h5 file with our data and returns position and images torch vectors for the DataLoader().
-    '''
-    def __init__(self, path):
-        self.path = path
-        # self.num_files = len(os.listdir(self.path+'/phases'))
-        self.file = h5py.File(self.path+'/data.h5', 'r')
-        self.transform = transforms.Compose([transforms.ToTensor(),
-                                        transforms.Normalize([0.485, 0.456, 0.406],
-                                        [0.229, 0.224, 0.225])])
-                                        
-    def __getitem__(self, index):
-        image = self.file['pos_{}'.format(index)][()]
-        image = self.transform(image)
-        
-        target = self.file['phases_{}'.format(index)][()].reshape(-1)
-        target -= target.min()
-        target = np.true_divide(target, target.max())
-        target *= 2 * np.pi
-
-        return image, target
-
-    def __len__(self):  # return count of sample we have
-        # import glob
-        return 10000#len(glob.glob1(self.path+'/phases', '*.bmp'))
 
 def create_h5(path='images'):
     '''
