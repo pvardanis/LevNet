@@ -319,12 +319,12 @@ class CustomDataset(Dataset):
         image = self.file['pos_{}'.format(index)][()]
         image = self.transform_image(image)
         
-        target = self.file['phases_{}'.format(index)][()] .reshape(-1)
-        print(target.min(), target.max())
+        target = self.file['phases_{}'.format(index)][()]
+        print(target.min(), target.max(), target.shape)
         target = self.transform_target(target)
-        print(target.min(), target.max())
+        print(target.min(), target.max(), target.shape)
         target *= 2 * np.pi
-        print(target.min(), target.max())
+        print(target.min(), target.max(), target.shape)
         # print(image.max(), image.shape, target.max(), target.shape)
 
         return image, target
