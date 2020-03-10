@@ -319,7 +319,7 @@ class CustomDataset(Dataset):
         # image = image.transpose((2, 0, 1))
         print(image.max())
         image = self.transform(image)
-        print(image.max())
+        print(image.min(), image.max())
         
         target = self.file['phases_{}'.format(index)][()] 
         target = torch.from_numpy(target).reshape(-1).type(torch.DoubleTensor)
