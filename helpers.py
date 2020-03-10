@@ -319,7 +319,7 @@ class CustomDataset(Dataset):
         image = self.file['pos_{}'.format(index)][()]
         image = self.transform_image(image)
         
-        target = self.file['phases_{}'.format(index)][()] 
+        target = self.file['phases_{}'.format(index)][()] .reshape(-1)
         print(target.min(), target.max())
         target = self.transform_target(target)
         print(target.min(), target.max())
