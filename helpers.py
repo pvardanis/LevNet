@@ -316,7 +316,7 @@ class CustomDataset(Dataset):
 
     def __getitem__(self, index):
         image = self.file['pos_{}'.format(index)][()]
-        image = torch.from_numpy(image.transpose((2, 0, 1))).type(torch.DoubleTensor)
+        image = image.transpose((2, 0, 1))
         print(image.max())
         image = self.transform(image)
         print(image.max())
