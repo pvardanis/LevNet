@@ -320,7 +320,7 @@ class CustomDataset(Dataset):
         target = self.file['phases_{}'.format(index)][()].reshape(-1)
         print(target.min(), target.max(), target.shape)
         target -= target.min()
-        target /= target.max()
+        target = np.true_divide(target, target.max())
         print(target.min(), target.max(), target.shape)
         target *= 2 * np.pi
         print(target.min(), target.max(), target.shape)
