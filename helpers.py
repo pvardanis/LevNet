@@ -130,9 +130,7 @@ class RunManager(object):
         results["run"] = self.run_count
         results["epoch"] = self.epoch_count
         results["train loss"] = loss_train
-        results["train phase error"] = np.sqrt(loss_train) 
         results["valid loss"] = loss_valid
-        results["valid phase error"] = np.sqrt(loss_valid) 
         results["epoch duration"] = epoch_duration
         results["run duration"] = run_duration
 
@@ -354,7 +352,9 @@ def create_h5(path='images'):
                     compression="gzip",
                     compression_opts=9)
 
-def MSE_2pi(output, target):
+def MSEWrap(output, target):
     loss = torch.mean(torch.fmod(output - target, 2 * np.pi) ** 2)
-
     return loss
+
+def Atan(output, target):
+    return torch.mean(torch.abs(torch.atan2(torch.sin(target - output), torch.cos(target - output))))

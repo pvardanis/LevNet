@@ -33,8 +33,10 @@ class Solver(object):
             self.criterion = nn.MSELoss()
         elif config.loss == 'l1':
             self.criterion = nn.L1Loss()
-        elif config.loss == '2pi':
-            self.criterion = MSE_2pi # my custom loss
+        elif config.loss == 'mod':
+            self.criterion = MSEWrap 
+        elif config.loss == 'atan':
+            self.criterion = Atan 
 
         self.optimizers = OrderedDict(adam=optim.Adam, sgd=optim.SGD)
 
