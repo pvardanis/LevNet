@@ -112,20 +112,15 @@ class RunManager(object):
 
     def end_epoch(self):
         loss_train = self.epoch_loss['train'] / len(self.loaders['train'].dataset)
-        # accuracy_train = self.epoch_num_correct['train'] / len(self.loaders['train'].dataset)
-
         loss_valid = self.epoch_loss['valid'] / len(self.loaders['valid'].dataset)
-        # accuracy_valid = self.epoch_num_correct['valid'] / len(self.loaders['valid'].dataset)
         
         epoch_duration = time.time() - self.epoch_start_time
         run_duration = time.time() - self.run_start_time
 
         if global_vars.tensorboard: # add graphs to SummaryWriter()
             self.tb['train'].add_scalar('Loss', loss_train, self.epoch_count)
-            # self.tb['train'].add_scalar('Accuracy', accuracy_train, self.epoch_count)
             self.tb['valid'].add_scalar('Loss', loss_valid, self.epoch_count)
-            # self.tb['valid'].add_scalar('Accuracy', accuracy_valid, self.epoch_count)
-
+            
             if not global_vars.colab: # we don't want to store everything in colab, otherwise it crashes
                 for name, param in self.network.named_parameters():
                     self.tb['train'].add_histogram(name, param, self.epoch_count)
@@ -136,10 +131,8 @@ class RunManager(object):
         results["epoch"] = self.epoch_count
         results["train loss"] = loss_train
         results["train phase error"] = np.sqrt(loss_train) / np.sqrt(512)
-        # results["train accuracy"] = accuracy_train
         results["valid loss"] = loss_valid
         results["valid phase error"] = np.sqrt(loss_valid) / np.sqrt(512)
-        # results["valid accuracy"] = accuracy_valid 
         results["epoch duration"] = epoch_duration
         results["run duration"] = run_duration
 
@@ -219,11 +212,11 @@ class EarlyStopping:
         """
         Every time an instance is called, the state is updated.
         """
-        score = -val_loss
+        score = val_loss
         if self.best_score is None:
             self.best_score = score
             self.save_checkpoint(val_loss, model)
-        elif score < self.best_score + self.delta:
+        elif score > self.best_score + self.delta:
             self.counter += 1
             if self.counter >= self.patience:
                 self.early_stop = True
