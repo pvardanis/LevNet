@@ -112,7 +112,9 @@ class RunManager(object):
 
     def end_epoch(self):
         loss_train = self.epoch_loss['train'] / len(self.loaders['train'].dataset)
+        accuracy_train = 100. * self.epoch_num_correct['train'] / len(self.loaders['train'].dataset) # accuracy for each phase classifier, tensor of (512, 1)
         loss_valid = self.epoch_loss['valid'] / len(self.loaders['valid'].dataset)
+        accuracy_valid = 100. * self.epoch_num_correct['valid'] / len(self.loaders['train'].dataset) # accuracy for each phase classifier, tensor of (512, 1)
         
         epoch_duration = time.time() - self.epoch_start_time
         run_duration = time.time() - self.run_start_time
@@ -120,6 +122,8 @@ class RunManager(object):
         if global_vars.tensorboard: # add graphs to SummaryWriter()
             self.tb['train'].add_scalar('Loss', loss_train, self.epoch_count)
             self.tb['valid'].add_scalar('Loss', loss_valid, self.epoch_count)
+            self.tb['train'].add_scalar('Accuracy', torch.mean(accuracy_train), self.epoch_count) # track mean accuracy across all classifiers
+            self.tb['valid'].add_scalar('Accuracy', torch.mean(accuracy_valid), self.epoch_count)
             
             if not global_vars.colab: # we don't want to store everything in colab, otherwise it crashes
                 for name, param in self.network.named_parameters():
@@ -158,11 +162,12 @@ class RunManager(object):
         self.epoch_loss[data] += loss.item() * self.loaders[data].batch_size
 
     def track_num_correct(self, preds, labels, data='train'):
-        self.epoch_num_correct[data] += self._get_num_correct(preds, labels)
+        self.epoch_num_correct[data] += self._get_num_correct(preds, labels) # tensor of (512, num_correct) for each classifier
 
     @torch.no_grad() # only applies to this function
     def _get_num_correct(self, preds, labels):
-        return preds.argmax(dim=1).eq(labels).sum().item()
+        preds = preds.data.max(1, dim=1)[1] # take max indices of the (512, 128) tensor across axis=1 (maximum prediction for each phase)
+        return np.sum(np.squeeze(preds.eq(labels).data.view_as(preds))).cpu().numpy()
 
     def _get_early_stop(self):
         return self.early_stopping.early_stop if self.stop_early else False
@@ -215,7 +220,7 @@ class EarlyStopping:
             self.best_score = score
             self.save_checkpoint(val_loss, model)
         elif score > self.best_score + self.delta:
-            print('{} > {}'.format(score, self.best_score))
+            # TODO: Fix patience counter.
             self.counter += 1
             if self.counter >= self.patience:
                 self.early_stop = True
@@ -237,67 +242,23 @@ class CustomDataset(Dataset):
     '''
     def __init__(self, path):
         self.path = path
-        # self.num_files = len(os.listdir(self.path+'/phases'))
+        self.num_files = len(os.listdir(self.path+'/phases'))
         self.file = h5py.File(self.path+'/data.h5', 'r')
         self.transform = transforms.Compose([transforms.ToTensor(),
                                         transforms.Normalize([0.485, 0.456, 0.406],
                                         [0.229, 0.224, 0.225])])
+        self.counter = 0
                                         
     def __getitem__(self, index):
         image = self.file['pos_{}'.format(index)][()]
         image = self.transform(image)
         
-        target = self.file['phases_{}'.format(index)][()].reshape(-1)
-        target -= target.min()
-        target = np.true_divide(target, target.max())
-        target *= 2 * np.pi
-
+        target = torch.from_numpy(self.file['phases_{}'.format(index)][()]).float()       
+        
         return image, target
 
     def __len__(self):  # return count of sample we have
-        # import glob
-        return 10000#len(glob.glob1(self.path+'/phases', '*.bmp'))
-
-def test_model(model, dataset):
-    ''' 
-    Tests model output for an input image.
-    '''
-    loader = torch.utils.data.DataLoader(dataset, num_workers=0, batch_size=64, shuffle=True)
-    images, labels = next(iter(loader))
-    image = images[0].squeeze(dim=0)
-    plt.imshow(image)
-    plt.show()
-    
-    print("Input shape: {}".format(images[0].unsqueeze(dim=0).shape))
-    output = model(images[0].unsqueeze(dim=0).to('cuda'))
-    print(output, output.shape)
-
-def arrange_images():
-    '''
-    Move position and phases *.bmp images to seperate folders
-    '''
-    path = './images'
-    assert os.path.isdir(path), "ERROR: Data not found!"
-    
-    root = os.listdir(path)
-    path_pos = path + '/pos'
-    path_phases = path + '/phases'    
-
-    if not os.path.exists(path_pos):
-        os.makedirs(path_pos)
-    if not os.path.exists(path_phases):
-        os.makedirs(path_phases)
-
-    for image in root:
-        if image.startswith('Phase'):
-            shutil.move(os.path.join('./images', image), os.path.join(path_phases, image))
-        if image.startswith('Position'):
-            shutil.move(os.path.join('./images', image), os.path.join(path_pos, image))
-
-    listA = os.listdir(path_pos)
-    listA.sort()
-    listB = os.listdir(path_phases)
-    listB.sort()
+        return self.num_files
 
 def prepare_sets(path='./images', percent=.9):
     '''
@@ -314,6 +275,7 @@ def prepare_sets(path='./images', percent=.9):
         valid_set: set with valid data.   
 
     '''
+    
     dataset = CustomDataset(path)
     percent = int(len(dataset) * percent)
     train_set, valid_set = torch.utils.data.random_split(dataset, [percent, len(dataset) - percent])
@@ -331,9 +293,9 @@ def create_h5(path='images'):
     list_images = glob.glob(images)
     # load phases images
     targets = os.path.join(path, "phases")
-    targets = os.path.join(targets, "*.bmp")
+    targets = os.path.join(targets, "*.csv")
     list_targets = glob.glob(targets)
-
+    
     with h5py.File('./images/data.h5', 'w') as hf:
         for i, img in enumerate(list_images):
             # images
@@ -343,15 +305,37 @@ def create_h5(path='images'):
                     data=image,
                     compression="gzip",
                     compression_opts=9)
-        
+            
         for i, tgt in enumerate(list_targets):
             # targets
-            target = Image.open(tgt)
+            target = pd.read_csv(tgt, sep=" ") # load csv
+            target.columns = ['phase']
+            possible_values = [str(value) for value in range(128) if value not in target.phase.values] # phases not included in the dataframe
+            extra = pd.DataFrame({'phase_' + value.zfill(3): [0] * 512 for value in possible_values})
+            target = pd.get_dummies(target, columns=['phase']) # one-hot encoding converts it to a DataFrame of 512 rows and 128 columns (1 column per phase), convert it to numpy
+            target.columns = [colname.split('_')[0] + '_' + colname.split('_')[1].zfill(3) for i, colname in enumerate(target.columns)]
+            target[extra.columns] = extra
+            target = target.reindex(sorted(target.columns), axis=1)
+            target = target.to_numpy()
             target_set = hf.create_dataset(
                     name='phases_'+str(i),
                     data=target,
                     compression="gzip",
                     compression_opts=9)
+
+def test_model(model, dataset):
+    ''' 
+    Tests model output for an input image.
+    '''
+    loader = torch.utils.data.DataLoader(dataset, num_workers=0, batch_size=64, shuffle=True)
+    images, labels = next(iter(loader))
+    image = images[0].squeeze(dim=0)
+    plt.imshow(image)
+    plt.show()
+    
+    print("Input shape: {}".format(images[0].unsqueeze(dim=0).shape))
+    output = model(images[0].unsqueeze(dim=0).to('cuda'))
+    print(output, output.shape)
 
 def MSEWrap(output, target):
     loss = torch.mean(torch.fmod(output - target, 2 * np.pi) ** 2)

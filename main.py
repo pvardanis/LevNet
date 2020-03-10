@@ -9,7 +9,9 @@ import torchvision.datasets as datasets
 from collections import OrderedDict
 import matplotlib.pyplot as plt
 from helpers import test_model, CustomDataset, prepare_sets
+from models import MyVgg
 import glob
+from torchsummary import summary
 
 set_seed(0)
 
@@ -64,11 +66,15 @@ def main(config):
 
         train_set, valid_set = torch.utils.data.random_split(dataset, [50000, 10000])
     else:
-        train_set, valid_set = prepare_sets(config.data_path, percent=.9)
+        train_set, valid_set = prepare_sets(config.data_path, percent=.9)        
 
-    solver = Solver(train_set, valid_set, test_set=None, config=config)
-    if config.mode == 'train':
-        solver.train()
+    # solver = Solver(train_set, valid_set, test_set=None, config=config)
+    # test = MyVgg()
+    # print(test)
+    # summary(test, (3, 224, 224))
+    # solver.build_model()
+    # if config.mode == 'train':
+    #     solver.train()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

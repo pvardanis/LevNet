@@ -37,6 +37,8 @@ class Solver(object):
             self.criterion = MSEWrap 
         elif config.loss == 'atan':
             self.criterion = Atan 
+        elif config.loss == 'cross_entropy':
+            self.criterion = nn.CrossEntropyLoss()
 
         self.optimizers = OrderedDict(adam=optim.Adam, sgd=optim.SGD)
 
@@ -80,13 +82,14 @@ class Solver(object):
 
             model = torchvision.models.vgg16(pretrained=False) if self.model_type == 'vgg-16' else torchvision.models.vgg16_bn(pretrained=False)
             num_features = model.classifier[6].in_features
-            features = list(model.classifier.children())[:-3] # Remove last layer and non-linearity
-            features.extend([nn.Linear(num_features, self.output_ch)]) # Add our layer with output_ch
+            features = list(model.classifier.children())[:-4] # Remove last layer and non-linearity
+            # features.extend([nn.Linear(num_features, self.output_ch)]) # Add our layer with output_ch
             model.classifier = nn.Sequential(*features) # Replace the model classifier
             
             for param in model.features.parameters(): # disable grad for trained layers
                 param.requires_grad = False
 
+            print(model)
             return model
 
         elif self.model_type == 'tester': return Tester()
@@ -98,6 +101,7 @@ class Solver(object):
         #     global_vars.cls() 
         # else: 
         #     clear_output(wait=True)
+
         for run in RunBuilder.get_runs(self.params):
             network = self.build_model().to(self.device, dtype=torch.float) # this returns a new instance of the network .to(self.device)
             train_loader = torch.utils.data.DataLoader(self.train_set, num_workers=self.num_workers, batch_size=run.batch_size, shuffle=True)
@@ -117,10 +121,17 @@ class Solver(object):
                 print('\nEpoch {}'.format(epoch+1))
                 print('\nTrain:\n')
                 for batch_idx, (images, labels) in enumerate(Bar(loaders['train'])):
-                    images, labels = images.to(self.device, dtype=torch.float), labels.to(self.device, dtype=torch.float)
+                    images, labels = images.to(self.device, dtype=torch.float), labels.to(self.device, dtype=torch.float) # labels is a tensor of (512, 128) values if we use MyVgg
                     optimizer.zero_grad()
-                    preds = network(images)
-                    loss = self.criterion(preds, labels)
+                    preds = network(images) # returns a dictionary 512 outputs of 128 values (512, 128) if MyVgg is used
+                    # Sum all losses from all classifiers if MyVgg is used
+
+                    if isinstance(self.criterion, nn.CrossEntropyLoss):
+                        loss = 0
+                        for output, target in zip(preds.values(), labels): # comparing (128, 1) vs. (128, 1) vectors 
+                            loss += self.criterion(output, target)
+                    else:
+                        loss = self.criterion(preds, labels)
                     loss.backward()
                     optimizer.step()
                     
@@ -132,9 +143,15 @@ class Solver(object):
                 network.eval() # skips dropout and batch_norm 
                 with torch.no_grad():
                     for batch_idx, (images, labels) in enumerate(Bar(loaders['valid'])):
-                        images, labels = images.to(self.device, dtype=torch.float), labels.to(self.device, dtype=torch.float)
+                        images, labels = images.to(self.device, dtype=torch.float), labels.to(self.device, dtype=torch.float) # labels is an array of 512 values if we use MyVgg
                         preds = network(images)
-                        loss = self.criterion(preds, labels)
+                        # Sum all losses from all classifiers if MyVgg is used
+                        if isinstance(self.criterion, nn.CrossEntropyLoss):
+                            loss = 0
+                            for output, target in zip(preds.values(), labels): # comparing (128, 1) vs. (128, 1) vectors 
+                                loss += self.criterion(output, target)
+                        else:
+                            loss = self.criterion(preds, labels)
 
                         m.track_loss(loss, 'valid')
                         # m.track_num_correct(preds, labels, 'valid')
