@@ -30,11 +30,11 @@ class Solver(object):
 
         # Loss/Optimizer
         if config.loss == 'mse':
-            self.criterion = nn.MSELoss().to(self.device)
+            self.criterion = nn.MSELoss()
         elif config.loss == 'l1':
-            self.criterion = nn.L1Loss().to(self.device)
+            self.criterion = nn.L1Loss()
         elif config.loss == '2pi':
-            self.criterion = MSE_2pi.to(self.device) # my custom loss
+            self.criterion = MSE_2pi # my custom loss
 
         self.optimizers = OrderedDict(adam=optim.Adam, sgd=optim.SGD)
 
