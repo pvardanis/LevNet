@@ -309,19 +309,18 @@ class CustomDataset(Dataset):
         self.path = path
         self.num_files = len(os.listdir(self.path+'/phases'))
         self.file = h5py.File(self.path+'/data.h5', 'r')
-        self.transform_image = transforms.Compose([transforms.ToTensor(),
+        self.transform = transforms.Compose([transforms.ToTensor(),
                                         transforms.Normalize([0.485, 0.456, 0.406],
                                         [0.229, 0.224, 0.225])])
-
-        self.transform_target = transforms.Compose([transforms.ToTensor()])
-
+                                        
     def __getitem__(self, index):
         image = self.file['pos_{}'.format(index)][()]
-        image = self.transform_image(image)
+        image = self.transform(image)
         
         target = self.file['phases_{}'.format(index)][()]
         print(target.min(), target.max(), target.shape)
-        target = self.transform_target(target)
+        target -= target.min()
+        target /= target.max()
         print(target.min(), target.max(), target.shape)
         target *= 2 * np.pi
         print(target.min(), target.max(), target.shape)
