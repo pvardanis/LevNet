@@ -320,11 +320,11 @@ class CustomDataset(Dataset):
         image = self.transform_image(image)
         
         target = self.file['phases_{}'.format(index)][()] 
-        print(min(target), max(target))
+        print(target.min(), target.max())
         target = self.transform_target(target)
-        print(min(target), max(target))
+        print(target.min(), target.max())
         target = target / target.sum(0).expand_as(target) * 2 * np.pi
-        print(min(target), max(target))
+        print(target.min(), target.max())
         # print(image.max(), image.shape, target.max(), target.shape)
 
         return image, target
