@@ -323,7 +323,7 @@ class CustomDataset(Dataset):
         print(target.min(), target.max())
         target = self.transform_target(target)
         print(target.min(), target.max())
-        target = target / target.sum(0).expand_as(target) * 2 * np.pi
+        target *= 2 * np.pi
         print(target.min(), target.max())
         # print(image.max(), image.shape, target.max(), target.shape)
 
