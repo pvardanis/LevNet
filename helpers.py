@@ -215,6 +215,7 @@ class EarlyStopping:
             self.best_score = score
             self.save_checkpoint(val_loss, model)
         elif score > self.best_score + self.delta:
+            print('{} > {}'.format(score, self.best_score))
             self.counter += 1
             if self.counter >= self.patience:
                 self.early_stop = True
