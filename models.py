@@ -44,9 +44,9 @@ class MyVgg(nn.Module):
         self.model.classifier = nn.Sequential(*list(self.model.classifier.children())[:-1])
 
         # Include seperate classifiers for each phase
-        self.model.pc = OrderedDict() # pc: phase classifiers, 512 in total
+        self.pc = OrderedDict() # pc: phase classifiers, 512 in total
         for classifier in range(512):
-            self.model.pc['PC_{}'.format(classifier)] = nn.Sequential(nn.Linear(4096, 128, bias=True)) # no need for nn.Softmax(), it is encapsulated in nn.CrossEntropyLoss()
+            self.pc['PC_{}'.format(classifier)] = nn.Sequential(nn.Linear(4096, 128, bias=True)) # no need for nn.Softmax(), it is encapsulated in nn.CrossEntropyLoss()
 
     # Set your own forward pass
     def forward(self, img, extra_info=None):
