@@ -49,13 +49,10 @@ def main(config):
         return
 
     if config.model_type == 'tester': 
-        transform = transforms.Compose([#transforms.RandomRotation(30),
-                                    transforms.Resize(224), # comment this if using Tester
-                                    # transforms.RandomHorizontalFlip(),
-                                    # transforms.RandomVerticalFlip(),
-                                    transforms.ToTensor(),
-                                    transforms.Normalize([0.5], [0.5]),
-                                    ])
+        transform = transforms.Compose([transforms.Resize(224), # comment this if using Tester
+                                        transforms.ToTensor(),
+                                        transforms.Normalize([0.5], [0.5]),
+                                        ])
 
         dataset = datasets.FashionMNIST(
                             root='./data',
