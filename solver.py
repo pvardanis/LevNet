@@ -86,7 +86,7 @@ class Solver(object):
             
             assert self.image_size == 224, "ERROR: Wrong image size."
 
-            model = torchvision.models.vgg16(pretrained=False) if self.model_type == 'vgg-16' else torchvision.models.vgg16_bn(pretrained=False)
+            model = torchvision.models.vgg16(pretrained=True) if self.model_type == 'vgg-16' else torchvision.models.vgg16_bn(pretrained=True)
             num_features = model.classifier[6].in_features
             features = list(model.classifier.children())[:-3] # Remove last layer and non-linearity
             features.extend([nn.Dropout(p=0.5), nn.Linear(num_features, self.output_ch * 2)]) # Add our layer with output_ch
