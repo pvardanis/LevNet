@@ -51,6 +51,9 @@ class RunBuilder():
 
         return runs
 
+    def __getitem__(self, key):
+        return getattr(self, key)
+    
 class RunManager(object):
     def __init__(self, save_best_model, stop_early):
         self.save_best_model = save_best_model
