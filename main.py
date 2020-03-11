@@ -63,7 +63,7 @@ def main(config):
         train_set, valid_set = torch.utils.data.random_split(dataset, [50000, 10000])
     else:
         train_set, valid_set = prepare_sets(config.data_path, percent=.9)   
-        # loader = torch.utils.data.DataLoader(train_set, num_workers=0, batch_size=64, shuffle=True)
+        # loader = torch.utils.data.DataLoader(train_set, num_workers=0, batch_size=1, shuffle=True)
         # images, labels = next(iter(loader))
             
 

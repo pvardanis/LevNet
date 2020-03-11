@@ -259,7 +259,9 @@ class CustomDataset(Dataset):
         
         target = torch.from_numpy(self.file['phases_{}'.format(index)][()]).float()   
         target *= 2 * np.pi / 127. # actual value between 0 and 2pi
-
+        target = np.array([[np.cos(t), np.sin(t)] for t in target]).flatten() 
+        target = torch.from_numpy(target)
+        
         return image, target
 
     def __len__(self):  # return count of sample we have
@@ -380,6 +382,10 @@ def Atan(output, target):
 
 def Cosine(output, target):
     '''
-    Cosine loss function. It's zero when output = target (or they differ by a multiple of 360 degrees)
-    '''
-    return torch.mean(1.0 - torch.cos(output - target))
+    Cosine loss function. Penalizes the area out of the unit circle and wraps the output around 2pi.
+    '''    
+    loss_1 = (np.add.reduceat(output ** 2, np.arange(0, len(output), 2)) - 1) ** 2 # penalize if output is outside the unit circle
+    loss_1 = torch.from_numpy(loss_1)
+    loss_2 = 1. - torch.cos(output - target) # wrap loss around 2pi
+
+    return torch.mean(loss_1) + torch.mean(loss_2)
