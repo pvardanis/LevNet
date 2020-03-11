@@ -125,9 +125,7 @@ class Solver(object):
             for epoch in range(self.num_epochs):
                 # Update lr to dataframe
                 if self.lr_scheduler:
-                    print(optimizer.param_groups[0]['lr'])
-                    print(m.run_params.lr, type(m.run_params))
-                    m.run_params.lr = optimizer.param_groups[0]['lr']  
+                    m.run_params['lr'] = optimizer.param_groups[0]['lr']  
 
                 # Train
                 network.train() # keep grads
