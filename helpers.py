@@ -257,11 +257,7 @@ class CustomDataset(Dataset):
         image = self.file['pos_{}'.format(index)][()]
         image = self.transform(image)
         
-        target = torch.from_numpy(self.file['phases_{}'.format(index)][()]).float()       
-        
-        target = pd.DataFrame(target).astype(float)
-        target = target.idxmax(axis=1)
-        target = torch.tensor(target.values)
+        target = torch.from_numpy(self.file['phases_{}'.format(index)][()]).float()   
 
         return image, target
 
@@ -344,14 +340,15 @@ def create_h5(path='images'):
         for i, tgt in enumerate(list_targets):
             # targets
             target = pd.read_csv(tgt, sep=" ", header=None) # load csv
-            target.columns = ['phase']
-            possible_values = [str(value) for value in range(128) if value not in target.phase.values] # phases not included in the dataframe
-            extra = pd.DataFrame({'phase_' + value.zfill(3): [0] * 512 for value in possible_values})
-            target = pd.get_dummies(target, columns=['phase']) # one-hot encoding converts it to a DataFrame of 512 rows and 128 columns (1 column per phase), convert it to numpy
-            target.columns = [colname.split('_')[0] + '_' + colname.split('_')[1].zfill(3) for i, colname in enumerate(target.columns)]
-            target[extra.columns] = extra
-            target = target.reindex(sorted(target.columns), axis=1)
-            target = target.to_numpy()
+            target = target.values
+            # target.columns = ['phase']
+            # possible_values = [str(value) for value in range(128) if value not in target.phase.values] # phases not included in the dataframe
+            # extra = pd.DataFrame({'phase_' + value.zfill(3): [0] * 512 for value in possible_values})
+            # target = pd.get_dummies(target, columns=['phase']) # one-hot encoding converts it to a DataFrame of 512 rows and 128 columns (1 column per phase), convert it to numpy
+            # target.columns = [colname.split('_')[0] + '_' + colname.split('_')[1].zfill(3) for i, colname in enumerate(target.columns)]
+            # target[extra.columns] = extra
+            # target = target.reindex(sorted(target.columns), axis=1)
+            # target = target.to_numpy()
             target_set = hf.create_dataset(
                     name='phases_'+str(i),
                     data=target,
