@@ -247,7 +247,7 @@ class CustomDataset(Dataset):
     '''
     def __init__(self, path):
         self.path = path
-        self.num_files = len(os.listdir(self.path+'/phases'))
+        # self.num_files = len(os.listdir(self.path+'/phases'))
         self.file = h5py.File(self.path+'/data.h5', 'r')
         self.transform = transforms.Compose([transforms.ToTensor(),
                                         transforms.Normalize([0.485, 0.456, 0.406],
@@ -267,7 +267,7 @@ class CustomDataset(Dataset):
         return image, target
 
     def __len__(self):  # return count of sample we have
-        return self.num_files
+        return 12000#self.num_files
 
 def arrange_images():
     '''
