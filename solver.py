@@ -168,7 +168,7 @@ class Solver(object):
                         m.track_loss(loss, 'valid')
                         if isinstance(network, MyVgg): m.track_num_correct(preds, labels, 'valid')
                     
-                scheduler.step() # update lr_scheduler
+                scheduler.step(loss) # update lr_scheduler
                 m.end_epoch()
                 if m._get_early_stop():
                     break
