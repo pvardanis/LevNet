@@ -65,7 +65,7 @@ class RunManager(object):
         self.run_count = 0
         self.run_data = [] # parameter values and results of each epoch
         self.run_start_time = None
-
+        
         self.network = None # model for each run
         self.loaders = None # dataloaders (train & validation) that's being used for each run
         self.tb = OrderedDict(train=None, valid=None) # tensorboard instance
@@ -75,6 +75,7 @@ class RunManager(object):
         self.early_stopping = None
         self.run_start_time = time.time()
         self.run_params = run
+        
         self.run_count += 1
 
         self.network = network
