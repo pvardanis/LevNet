@@ -43,8 +43,11 @@ class Solver(object):
         elif config.loss == 'cos':
             self.criterion = Cosine
 
-        self.optimizers = OrderedDict(adam=optim.Adam, sgd=optim.SGD)
+        self.lr_scheduler = config.lr_scheduler
 
+        self.optimizers = OrderedDict(adam=optim.Adam, sgd=optim.SGD)
+        self.schedulers = OrderedDict(reduce_lr=optim.lr_scheduler.ReduceLROnPlateau, step_lr=optim.lr_scheduler.StepLR)
+        
         # Data Loaders
         self.train_set = train_set
         self.valid_set = valid_set
@@ -116,8 +119,14 @@ class Solver(object):
             elif run.optimizer == 'sgd':
                 optimizer = self.optimizers[run.optimizer](network.parameters(), lr=run.lr, momentum=self.momentum)
 
+            if self.lr_scheduler: scheduler = self.schedulers['reduce_lr'](optimizer, patience=10) # assign new lr_scheduler
+            
             m.begin_run(run, network, loaders)
             for epoch in range(self.num_epochs):
+                # Update lr to dataframe
+                if self.lr_scheduler:
+                    m.run_params.lr = self.optim.ReduceLROnPlateau.get_last_lr() 
+
                 # Train
                 network.train() # keep grads
                 m.begin_epoch()
@@ -159,6 +168,7 @@ class Solver(object):
                         m.track_loss(loss, 'valid')
                         if isinstance(network, MyVgg): m.track_num_correct(preds, labels, 'valid')
                     
+                scheduler.step() # update lr_scheduler
                 m.end_epoch()
                 if m._get_early_stop():
                     break

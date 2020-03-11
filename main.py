@@ -95,6 +95,7 @@ if __name__ == '__main__':
     parser.add_argument('--beta2', type=float, default=0.999, help='Beta2 for Adam optimizer.')          
     parser.add_argument('--momentum', type=float, default=0.9, help='Momentum for SGD.') 
     parser.add_argument('--early_stopping', action='store_true', default=False, help='Use early stopping for training.') 
+    parser.add_argument('--lr_scheduler', action='store_true', default=False, help='Use early stopping for training.')
     parser.add_argument('--patience', nargs='+', type=int, default=[20], help='Patience for early stopping.')
     parser.add_argument('--save_best_model', action='store_true', default=False, help='Save best model from each run.') 
     
