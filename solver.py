@@ -38,8 +38,8 @@ class Solver(object):
             self.criterion = MSEWrap 
         elif config.loss == 'atan':
             self.criterion = Atan 
-        elif config.loss == 'cross_entropy':
-            self.criterion = nn.CrossEntropyLoss()
+        elif config.loss == 'bce':
+            self.criterion = nn.BCEWithLogitsLoss()
         elif config.loss == 'cos':
             self.criterion = Cosine
 
