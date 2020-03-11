@@ -381,5 +381,4 @@ def Cosine(output, target):
     '''
     Cosine loss function. It's zero when output = target (or they differ by a multiple of 360 degrees)
     '''
-    print(output.shape, target.shape)
     return torch.mean(1.0 - torch.cos(output - target))
