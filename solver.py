@@ -100,10 +100,10 @@ class Solver(object):
     
     def train(self):
         m = RunManager(self.save_best_model, self.stop_early)
-        # if global_vars.console: 
-        #     global_vars.cls() 
-        # else: 
-        #     clear_output(wait=True)
+        if global_vars.console: 
+            global_vars.cls() 
+        else: 
+            clear_output(wait=True)
 
         for run in RunBuilder.get_runs(self.params):
             network = self.build_model().to(self.device, dtype=torch.float) # this returns a new instance of the network .to(self.device)
