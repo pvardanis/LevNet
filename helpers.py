@@ -258,7 +258,7 @@ class CustomDataset(Dataset):
         image = self.transform(image)
         
         target = torch.from_numpy(self.file['phases_{}'.format(index)][()]).float()   
-        print(target.shape)
+        
         return image, target
 
     def __len__(self):  # return count of sample we have
@@ -340,7 +340,7 @@ def create_h5(path='images'):
         for i, tgt in enumerate(list_targets):
             # targets
             target = pd.read_csv(tgt, sep=" ", header=None) # load csv
-            target = target.values
+            target = target.values.squeeze()
             # target.columns = ['phase']
             # possible_values = [str(value) for value in range(128) if value not in target.phase.values] # phases not included in the dataframe
             # extra = pd.DataFrame({'phase_' + value.zfill(3): [0] * 512 for value in possible_values})
