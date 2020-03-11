@@ -40,7 +40,7 @@ class RunBuilder():
 
     List of different runs for all combination of params.
     '''
-    @staticmethod
+    # @staticmethod
     def get_runs(params):
 
         Run = namedtuple('Run', params.keys()) # subclass Run() tuple with parameter keys as items
