@@ -391,6 +391,6 @@ def Cosine(output, target):
 
     print(output[1::2].shape, output[::2].shape)
     # Compute the second loss, 1 - cos
-    loss_2 =  1. - torch.cos(torch.atan2(output[1::2], output[::2]) - target)  
+    # loss_2 =  1. - torch.cos(torch.atan2(output[1::2], output[::2]) - target)  
     
-    return torch.mean(loss_1) + torch.mean(loss_2)
+    return torch.mean(loss_1)# + torch.mean(loss_2)
