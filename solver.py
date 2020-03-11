@@ -126,7 +126,7 @@ class Solver(object):
                 # Update lr to dataframe
                 if self.lr_scheduler:
                     print(optimizer.param_groups[0]['lr'])
-                    print(m.run_params, type(m.run_params))
+                    print(m.run_params.lr, type(m.run_params.lr))
                     m.run_params.lr = optimizer.param_groups[0]['lr']  
 
                 # Train
