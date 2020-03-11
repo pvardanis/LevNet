@@ -120,7 +120,7 @@ class Solver(object):
                 optimizer = self.optimizers[run.optimizer](network.parameters(), lr=run.lr, momentum=self.momentum)
 
             if self.lr_scheduler: scheduler = self.schedulers['reduce_lr'](optimizer, patience=run.patience, \
-                                                                        threshold=0.01,  verbose=1) # assign new lr_scheduler
+                                                                        threshold=0.01,  threshold_mode='abs', verbose=1) # assign new lr_scheduler
             
             m.begin_run(run, network, loaders)
             for epoch in range(self.num_epochs):
