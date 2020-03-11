@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 from helpers import test_model, CustomDataset, prepare_sets
 from models import MyVgg
 import glob
-from torchsummary import summary
 
 set_seed(0)
 
@@ -67,15 +66,14 @@ def main(config):
         train_set, valid_set = torch.utils.data.random_split(dataset, [50000, 10000])
     else:
         train_set, valid_set = prepare_sets(config.data_path, percent=.9)   
-        loader = torch.utils.data.DataLoader(train_set, num_workers=0, batch_size=1, shuffle=True)
-        images, labels = next(iter(loader))
+        # loader = torch.utils.data.DataLoader(train_set, num_workers=0, batch_size=64, shuffle=True)
+        # images, labels = next(iter(loader))
             
 
     solver = Solver(train_set, valid_set, test_set=None, config=config)
     solver.build_model()
     # test = MyVgg()
     # print(test)
-    # summary(test, (3, 224, 224))
     # solver.build_model()
     # if config.mode == 'train':
     #     solver.train()

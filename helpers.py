@@ -260,19 +260,41 @@ class CustomDataset(Dataset):
         
         target = torch.from_numpy(self.file['phases_{}'.format(index)][()]).float()       
         
-        # if self.model_type == 'vgg-16-bn': # uncommented this for old data
-        #     target = pd.DataFrame(target).astype(float)
-        #     print(target.shape)
-        #     target = target.idxmax(axis=1)
-        #     target = torch.tensor(target.values)
-
-
-        print(target.shape)
+        target = pd.DataFrame(target).astype(float)
+        target = target.idxmax(axis=1)
+        target = torch.tensor(target.values)
 
         return image, target
 
     def __len__(self):  # return count of sample we have
         return self.num_files
+
+def arrange_images():
+    '''
+    Move position and phases *.bmp images to seperate folders
+    '''
+    path = './images'
+    assert os.path.isdir(path), "ERROR: Data not found!"
+    
+    root = os.listdir(path)
+    path_pos = path + '/pos'
+    path_phases = path + '/phases'    
+
+    if not os.path.exists(path_pos):
+        os.makedirs(path_pos)
+    if not os.path.exists(path_phases):
+        os.makedirs(path_phases)
+
+    for image in root:
+        if image.startswith('Phase'):
+            shutil.move(os.path.join('./images', image), os.path.join(path_phases, image))
+        if image.startswith('Position'):
+            shutil.move(os.path.join('./images', image), os.path.join(path_pos, image))
+
+    listA = os.listdir(path_pos)
+    listA.sort()
+    listB = os.listdir(path_phases)
+    listB.sort()
 
 def prepare_sets(path='./images', percent=.9):
     '''
@@ -322,7 +344,7 @@ def create_h5(path='images'):
             
         for i, tgt in enumerate(list_targets):
             # targets
-            target = pd.read_csv(tgt, sep=" ") # load csv
+            target = pd.read_csv(tgt, sep=" ", header=None) # load csv
             target.columns = ['phase']
             possible_values = [str(value) for value in range(128) if value not in target.phase.values] # phases not included in the dataframe
             extra = pd.DataFrame({'phase_' + value.zfill(3): [0] * 512 for value in possible_values})
