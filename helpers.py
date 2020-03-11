@@ -387,9 +387,9 @@ def Cosine(output, target):
 
     # Penalize if output is out of the unit circle   
     squares = output ** 2 # (x ^ 2, y ^ 2)
-    loss_1 = ((squares[::2] + squares[1::2]) - 1) ** 2 # (x ^ 2 + y ^ 2 - 1) ** 2
+    loss_1 = ((squares[:, ::2] + squares[:, 1::2]) - 1) ** 2 # (x ^ 2 + y ^ 2 - 1) ** 2
 
     # Compute the second loss, 1 - cos
     loss_2 =  1. - torch.cos(torch.atan2(output[:, 1::2], output[:, ::2]) - target)  
     
-    return torch.mean(loss_1) + torch.mean(loss_2)
+    return torch.mean(loss_1 + loss_2)
