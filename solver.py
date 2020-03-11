@@ -119,8 +119,9 @@ class Solver(object):
             elif run.optimizer == 'sgd':
                 optimizer = self.optimizers[run.optimizer](network.parameters(), lr=run.lr, momentum=self.momentum)
 
-            if self.lr_scheduler: scheduler = self.schedulers['reduce_lr'](optimizer, patience=run.patience, \
-                                                                        threshold=0.01,  threshold_mode='abs', verbose=1) # assign new lr_scheduler
+            if self.lr_scheduler: 
+                scheduler = self.schedulers['reduce_lr'](optimizer, patience=run.patience, \
+                                                            threshold=0.01,  threshold_mode='abs', verbose=1) # assign new lr_scheduler
             
             m.begin_run(run, network, loaders)
             for epoch in range(self.num_epochs):
@@ -165,7 +166,9 @@ class Solver(object):
                         m.track_loss(loss, 'valid')
                         if isinstance(network, MyVgg): m.track_num_correct(preds, labels, 'valid')
                     
-                scheduler.step(loss) # update lr_scheduler
+                if self.lr_scheduler: 
+                    scheduler.step(loss) # update lr_scheduler
+            
                 m.end_epoch(lr=optimizer.param_groups[0]['lr'])
                 if m._get_early_stop():
                     break
