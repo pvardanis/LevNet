@@ -50,10 +50,7 @@ class RunBuilder():
             runs.append(Run(*v))
 
         return runs
-
-    def __getitem__(self, key):
-        return getattr(self, key)
-    
+        
 class RunManager(object):
     def __init__(self, save_best_model, stop_early):
         self.save_best_model = save_best_model
@@ -72,6 +69,9 @@ class RunManager(object):
         self.network = None # model for each run
         self.loaders = None # dataloaders (train & validation) that's being used for each run
         self.tb = OrderedDict(train=None, valid=None) # tensorboard instance
+
+    def __getitem__(self, key):
+        return getattr(self, key)
 
     def begin_run(self, run, network, loaders):
         
