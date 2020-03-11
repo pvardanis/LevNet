@@ -75,7 +75,7 @@ class Solver(object):
         self.num_epochs_decay = config.num_epochs_decay
         self.params['batch_size'] = config.batch_size
         self.stop_early = config.early_stopping
-        if self.stop_early: self.params['patience'] = config.patience 
+        self.params['patience'] = config.patience 
         self.save_best_model = config.save_best_model
 
         print(self.params)
