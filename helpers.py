@@ -120,9 +120,12 @@ class RunManager(object):
         self.epoch_loss = OrderedDict(train=0, valid=0)
         self.epoch_num_correct = OrderedDict(train=0, valid=0)
 
-    def end_epoch(self):
+    def end_epoch(self, lr):
         '''
         Stores train/valid loss & accuracy, epoch_duration, run_duration, patience counter at after a whole epoch is completed.
+
+        Inputs
+            lr: learning rate of the optimizer (needed when lr is dynamic, i.e. when using optim.lr_scheduler.ReduceLROnPlateau)
         '''
         loss_train = self.epoch_loss['train'] / len(self.loaders['train'].dataset)
         loss_valid = self.epoch_loss['valid'] / len(self.loaders['valid'].dataset)
@@ -163,6 +166,8 @@ class RunManager(object):
         for k, v in self.run_params._asdict().items(): 
             if k != 'patience': # no need to add patience in columns
                 results[k] = v
+            if k == 'lr': # no need to add patience in columns
+                results[k] = lr
 
         self.run_data.append(results)
 

@@ -124,10 +124,6 @@ class Solver(object):
             
             m.begin_run(run, network, loaders)
             for epoch in range(self.num_epochs):
-                # Update lr to dataframe
-                if self.lr_scheduler: 
-                    print(optimizer.param_groups[0]['lr'])  
-
                 # Train
                 network.train() # keep grads
                 m.begin_epoch()
@@ -169,9 +165,8 @@ class Solver(object):
                         m.track_loss(loss, 'valid')
                         if isinstance(network, MyVgg): m.track_num_correct(preds, labels, 'valid')
                     
-                print(type(loss), loss)
                 scheduler.step(loss) # update lr_scheduler
-                m.end_epoch()
+                m.end_epoch(lr=optimizer.param_groups[0]['lr'])
                 if m._get_early_stop():
                     break
                 
