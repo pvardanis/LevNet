@@ -71,12 +71,12 @@ def main(config):
             
 
     solver = Solver(train_set, valid_set, test_set=None, config=config)
-    solver.build_model()
+    # solver.build_model()
     # test = MyVgg()
     # print(test)
     # solver.build_model()
-    # if config.mode == 'train':
-    #     solver.train()
+    if config.mode == 'train':
+        solver.train()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
