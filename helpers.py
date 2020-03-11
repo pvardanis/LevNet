@@ -258,7 +258,8 @@ class CustomDataset(Dataset):
         image = self.transform(image)
         
         target = torch.from_numpy(self.file['phases_{}'.format(index)][()]).float()   
-        
+        target *= 2 * np.pi / 127. # actual value between 0 and 2pi
+
         return image, target
 
     def __len__(self):  # return count of sample we have
