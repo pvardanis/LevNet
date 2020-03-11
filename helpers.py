@@ -383,10 +383,13 @@ def Atan(output, target):
 def Cosine(output, target):
     '''
     Cosine loss function. Penalizes the area out of the unit circle and wraps the output around 2pi.
-    '''    
-    loss_1 = output.data.cpu().numpy() # convert tensor to numpy
-    loss_1 = (np.add.reduceat(loss_1** 2, np.arange(0, len(loss_1), 2)) - 1) ** 2 # penalize if output is outside the unit circle
-    loss_1 = torch.from_numpy(loss_1).cuda() # convert back to tensor
-    loss_2 = 1. - torch.cos(output - target) # wrap loss around 2pi
+    ''' 
 
+    # Penalize if output is out of the unit circle   
+    squares = output ** 2 # (x ^ 2, y ^ 2)
+    loss_1 = ((squares[::2] + squares[1::2]) - 1) ** 2 # (x ^ 2 + y ^ 2 - 1) ** 2
+
+    # Compute the second loss, 1 - cos
+    loss_2 =  1. - torch.cos(torch.atan2(target[1::2] / target[::2]) - torch.atan2(output[1::2] / output[::2])) # devide every y with x, take the atan2 
+    
     return torch.mean(loss_1) + torch.mean(loss_2)
