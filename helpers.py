@@ -40,7 +40,7 @@ class RunBuilder():
 
     List of different runs for all combination of params.
     '''
-    # @staticmethod
+    @staticmethod
     def get_runs(params):
 
         Run = namedtuple('Run', params.keys()) # subclass Run() tuple with parameter keys as items
@@ -50,6 +50,14 @@ class RunBuilder():
             runs.append(Run(*v))
 
         return runs
+
+    @property
+    def x(self):
+        return self.lr
+
+    @x.setter
+    def x(self, value):
+        self.lr = value
         
 class RunManager(object):
     def __init__(self, save_best_model, stop_early):
