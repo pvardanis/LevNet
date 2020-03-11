@@ -259,8 +259,8 @@ class CustomDataset(Dataset):
         
         target = torch.from_numpy(self.file['phases_{}'.format(index)][()]).float()   
         target *= 2 * np.pi / 127. # actual value between 0 and 2pi
-        target = np.array([[np.cos(t), np.sin(t)] for t in target]).flatten() 
-        target = torch.from_numpy(target)
+        # target = np.array([[np.cos(t), np.sin(t)] for t in target]).flatten() 
+        # target = torch.from_numpy(target)
         
         return image, target
 
@@ -390,6 +390,6 @@ def Cosine(output, target):
     loss_1 = ((squares[::2] + squares[1::2]) - 1) ** 2 # (x ^ 2 + y ^ 2 - 1) ** 2
 
     # Compute the second loss, 1 - cos
-    loss_2 =  1. - torch.cos(torch.atan2(target[1::2] / target[::2]) - torch.atan2(output[1::2] / output[::2])) # devide every y with x, take the atan2 
+    loss_2 =  1. - torch.cos(torch.atan2(output[1::2], output[::2]) - target)  
     
     return torch.mean(loss_1) + torch.mean(loss_2)
