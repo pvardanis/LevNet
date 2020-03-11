@@ -125,7 +125,7 @@ class Solver(object):
             for epoch in range(self.num_epochs):
                 # Update lr to dataframe
                 if self.lr_scheduler:
-                    m.run_params.lr = self.optim.ReduceLROnPlateau.get_last_lr() 
+                    m.run_params.lr = scheduler.get_last_lr() 
 
                 # Train
                 network.train() # keep grads
