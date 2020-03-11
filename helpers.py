@@ -384,9 +384,9 @@ def Cosine(output, target):
     '''
     Cosine loss function. Penalizes the area out of the unit circle and wraps the output around 2pi.
     '''    
-    loss_1 = output.cpu() #output.data.numpy() # convert tensor to numpy
+    loss_1 = output.data.cpu().numpy() # convert tensor to numpy
     loss_1 = (np.add.reduceat(output ** 2, np.arange(0, len(output), 2)) - 1) ** 2 # penalize if output is outside the unit circle
-    loss_1 = torch.from_numpy(loss_1) # convert back to tensor
+    loss_1 = torch.from_numpy(loss_1).cuda() # convert back to tensor
     loss_2 = 1. - torch.cos(output - target) # wrap loss around 2pi
 
     return torch.mean(loss_1) + torch.mean(loss_2)
