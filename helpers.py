@@ -247,7 +247,6 @@ class CustomDataset(Dataset):
     '''
     def __init__(self, path):
         self.path = path
-        # self.num_files = len(os.listdir(self.path+'/phases'))
         self.file = h5py.File(self.path+'/data.h5', 'r')
         self.transform = transforms.Compose([transforms.ToTensor(),
                                         transforms.Normalize([0.485, 0.456, 0.406],
