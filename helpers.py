@@ -395,4 +395,4 @@ def Cosine(output, target):
     print(x.shape, y.shape, target.shape)
     loss_2 =  1. - torch.cos(torch.atan2(y, x) - target)  
     
-    return torch.mean(loss_1) + torch.mean(loss_2)
+    return 5
