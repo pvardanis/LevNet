@@ -119,7 +119,7 @@ class Solver(object):
             elif run.optimizer == 'sgd':
                 optimizer = self.optimizers[run.optimizer](network.parameters(), lr=run.lr, momentum=self.momentum)
 
-            if self.lr_scheduler: scheduler = self.schedulers['reduce_lr'](optimizer, patience=10) # assign new lr_scheduler
+            if self.lr_scheduler: scheduler = self.schedulers['reduce_lr'](optimizer, patience=run.patience, threshold=0.01) # assign new lr_scheduler
             
             m.begin_run(run, network, loaders)
             for epoch in range(self.num_epochs):
