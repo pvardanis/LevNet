@@ -100,18 +100,26 @@ class RunManager(object):
                 self.tb['train'].add_graph(self.network, images_train)
         
     def end_run(self):
-
+        '''
+        Resets epoch_count and closes tensorboard graphs.
+        '''
         self.tb['train'].close()
         self.tb['valid'].close()
         self.epoch_count = 0
 
     def begin_epoch(self):
+        '''
+        Initializes variables at the start of each epoch.
+        '''
         self.epoch_start_time = time.time()
         self.epoch_count += 1
         self.epoch_loss = OrderedDict(train=0, valid=0)
         self.epoch_num_correct = OrderedDict(train=0, valid=0)
 
     def end_epoch(self):
+        '''
+        Stores train/valid loss & accuracy, epoch_duration, run_duration, patience counter at after a whole epoch is completed.
+        '''
         loss_train = self.epoch_loss['train'] / len(self.loaders['train'].dataset)
         loss_valid = self.epoch_loss['valid'] / len(self.loaders['valid'].dataset)
         
@@ -156,6 +164,7 @@ class RunManager(object):
 
         df = pd.DataFrame.from_dict(self.run_data)
 
+        # Clear printed output
         if global_vars.console:
             global_vars.cls() # clear console output
             print(df)            
@@ -164,20 +173,53 @@ class RunManager(object):
             display(df)
                 
     def track_loss(self, loss, data='train'):
+        '''
+        Tracks loss.
+
+        Inputs
+            preds (tensor): predictions
+            labels (tensor): labels
+            data (str): 'train' or 'valid', to keep track of seperate losses
+        '''
         self.epoch_loss[data] += loss.item() * self.loaders[data].batch_size
 
     def track_num_correct(self, preds, labels, data='train'):
+        '''
+        Tracks number of correct predictions.
+
+        Inputs
+            preds (tensor): predictions
+            labels (tensor): labels
+            data (str): 'train' or 'valid', to keep track of seperate scores
+        '''
         self.epoch_num_correct[data] += self._get_num_correct(preds, labels) # tensor of (512, num_correct) for each classifier
 
     @torch.no_grad() # only applies to this function
     def _get_num_correct(self, preds, labels):
+        '''
+        Computes number of correct predicitons.
+
+        Inputs
+            preds (tensor): predictions
+            labels (tensor): labels
+        '''
         preds = preds.data.max(1, dim=1)[1] # take max indices of the (512, 128) tensor across axis=1 (maximum prediction for each phase)
         return np.sum(np.squeeze(preds.eq(labels).data.view_as(preds))).cpu().numpy()
 
     def _get_early_stop(self):
+        '''
+        Returns True if patience is overpassed, to break the training loop.
+        '''
         return self.early_stopping.early_stop if self.stop_early else False
 
     def save_results(self, filename):
+        '''
+        Saves results from each run.
+
+        Inputs
+            filename (str): file name to be saved
+
+        '''
         
         # setup filename and directory
         current_dir = os.getcwd() # get current working directory
@@ -194,13 +236,11 @@ class RunManager(object):
         pd.DataFrame.from_dict(self.run_data).to_pickle(file_path) # save to pickle
 
 class EarlyStopping:
-    """
-    Early stops the training if validation loss doesn't improve after a given patience.
-    """
     def __init__(self, patience=1, verbose=False, delta=0, path=None):
         """
-        Inputs
+        Early stops the training if validation loss doesn't improve after a given patience.
         
+        Inputs
             patience (int): How long to wait after last time validation loss improved (default=1).
             verbose (bool): If True, prints a message for each validation loss improvement (default=False).
             delta (float): Minimum change in the monitored quantity to qualify as an improvement (default=0.).
@@ -219,6 +259,11 @@ class EarlyStopping:
     def __call__(self, val_loss, model, save):
         """
         Every time an instance is called, the state is updated.
+
+        Inputs
+            val_loss (float): valid loss
+            model (obj): model
+            save (bool): True if save, else False 
         """
         score = val_loss
         if self.best_score is None:
@@ -237,13 +282,17 @@ class EarlyStopping:
     def save_checkpoint(self, val_loss, model):
         '''
         Saves model when validation loss decreases.
+
+        Inputs
+            val_loss (float): valid loss
+            model (bool): model
         '''
         torch.save(model.state_dict(), self.path+'/checkpoint.pt')
         self.val_loss_min = val_loss
 
-class CustomDataset(Dataset):
+class CustomDataset(Dataset): # inherits from Dataset
     '''
-    Custom Dataset() that reads a .h5 file with our data and returns position and images torch vectors for the DataLoader().
+    Custom Dataset() that reads a .h5 file with data and returns image and target vectors for the DataLoader().
     '''
     def __init__(self, path):
         self.path = path
@@ -259,17 +308,15 @@ class CustomDataset(Dataset):
         
         target = torch.from_numpy(self.file['phases_{}'.format(index)][()]).float()   
         target *= 2 * np.pi / 127. # actual value between 0 and 2pi
-        # target = np.array([[np.cos(t), np.sin(t)] for t in target]).flatten() 
-        # target = torch.from_numpy(target)
         
         return image, target
 
-    def __len__(self):  # return count of sample we have
+    def __len__(self):  # return number of samples we have
         return 12000#self.num_files
 
 def arrange_images():
     '''
-    Move position and phases *.bmp images to seperate folders
+    Move position *.bmp images and phases *.csv files to seperate folders
     '''
     path = './images'
     assert os.path.isdir(path), "ERROR: Data not found!"
@@ -299,14 +346,12 @@ def prepare_sets(path='./images', percent=.9):
     Loads a CustomDataset() from the path and returns a train set and a valid set randomly split with percent=.9 (default).
 
     Inputs
-
-        path: path where images are stored.
-        percent: percent of train/valid random split.
+        path (str): path where images are stored.
+        percent (float): percent of train/valid random split.
 
     Returns
-
-        train_set: set with training data.
-        valid_set: set with valid data.   
+        train_set (tensor): set with training data
+        valid_set (tensor): set with valid data 
 
     '''
     
@@ -319,6 +364,9 @@ def prepare_sets(path='./images', percent=.9):
 def create_h5(path='images'):
     '''
     Converts .bpm images with positions and phases to a single h5 file. This makes computations for DataLoader() much faster.
+
+    Inputs
+        path: path where images are stored
     '''
     import glob
     # load positions images
@@ -344,6 +392,8 @@ def create_h5(path='images'):
             # targets
             target = pd.read_csv(tgt, sep=" ", header=None) # load csv
             target = target.values.squeeze()
+
+            # This is for MyVgg
             # target.columns = ['phase']
             # possible_values = [str(value) for value in range(128) if value not in target.phase.values] # phases not included in the dataframe
             # extra = pd.DataFrame({'phase_' + value.zfill(3): [0] * 512 for value in possible_values})
@@ -361,6 +411,10 @@ def create_h5(path='images'):
 def test_model(model, dataset):
     ''' 
     Tests model output for an input image.
+
+    Inputs
+        model: model to be tested
+        dataset: dataset to test on   
     '''
     loader = torch.utils.data.DataLoader(dataset, num_workers=0, batch_size=64, shuffle=True)
     images, labels = next(iter(loader))
@@ -374,15 +428,36 @@ def test_model(model, dataset):
 
 # Custom losses
 def MSEWrap(output, target):
+    ''' 
+    Custom loss function that wraps the MSE around 2pi.
+
+    Inputs
+        output: predicted phases
+        target: true phases   
+    '''
     loss = torch.mean(torch.fmod(output - target, 2 * np.pi) ** 2)
     return loss
 
 def Atan(output, target):
+    ''' 
+    Custom loss function atan2.
+
+    Inputs
+        output: predicted phases
+        target: true phases   
+    '''
     return torch.mean(torch.abs(torch.atan2(torch.sin(target - output), torch.cos(target - output))))
 
 def Cosine(output, target):
     '''
-    Cosine loss function. Penalizes the area out of the unit circle and wraps the output around 2pi.
+    Custom loss function with 2 losses:
+
+    - loss_1: penalizes the area out of the unit circle 
+    - loss_2: 0 if output = target
+
+    Inputs
+        output: predicted phases
+        target: true phases  
     ''' 
 
     # Penalize if output is out of the unit circle   
