@@ -98,10 +98,10 @@ class RunManager(object):
             images_valid, labels_valid = images_valid.cuda(), labels_valid.cuda()
             grid_valid = torchvision.utils.make_grid(images_valid).cuda()
 
-            if not global_vars.colab: # we don't want to store everything in colab, otherwise it crashes
-                self.tb['train'].add_image('images_train', grid_train) 
-                self.tb['valid'].add_image('images_valid', grid_valid) 
-                self.tb['train'].add_graph(self.network, images_train)
+            # if not global_vars.colab: # we don't want to store everything in colab, otherwise it crashes
+            #     self.tb['train'].add_image('images_train', grid_train) 
+            #     self.tb['valid'].add_image('images_valid', grid_valid) 
+            #     self.tb['train'].add_graph(self.network, images_train)
         
     def end_run(self):
         '''
