@@ -26,8 +26,6 @@ class Tester(nn.Module):
         return x
 
 class LevNet(nn.Module):
-    ### TODO: choose an architecture, and complete the class
-    10
     def __init__(self):
         super(Net, self).__init__()
         self.conv1 = nn.Conv2d(3, 32, 3, padding=1) 
