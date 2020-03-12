@@ -89,7 +89,7 @@ class Solver(object):
             model = torchvision.models.vgg16(pretrained=True) if self.model_type == 'vgg-16' else torchvision.models.vgg16_bn(pretrained=True)
             num_features = model.classifier[6].in_features
             features = list(model.classifier.children())[:-3] # Remove last layer and non-linearity
-            features.extend([nn.Dropout(p=0.5), nn.Linear(num_features, self.output_ch * 2)]) # Add our layer with output_ch
+            features.extend([nn.Linear(num_features, self.output_ch * 2)]) # Add our layer with output_ch nn.Dropout(p=0.5)
             model.classifier = nn.Sequential(*features) # Replace the model classifier
             
             for param in model.features.parameters(): # disable grad for trained layers
