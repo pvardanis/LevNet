@@ -32,7 +32,7 @@ class Solver(object):
         # Loss/Optimizer
         if config.loss == 'mse':
             self.criterion = nn.MSELoss()
-        elif config.loss = 'nll':
+        elif config.loss == 'nll':
             self.criterion = nn.NLLLoss()
         elif config.loss == 'l1':
             self.criterion = nn.L1Loss()
