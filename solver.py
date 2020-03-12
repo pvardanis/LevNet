@@ -153,7 +153,7 @@ class Solver(object):
                 print(torch.equal(a.data, b.data))     
                 print(loss)  
                 # print(list(network.parameters())[0].clone()) 
-                print(preds, pred.shape)
+                print(preds, preds.shape)
                 print(labels, labels.shape)
                 # Validation
                 print('\nValid:\n')
