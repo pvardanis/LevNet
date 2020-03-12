@@ -97,10 +97,7 @@ class RunManager(object):
             images_valid, labels_valid = next(iter(self.loaders['valid']))
             images_valid, labels_valid = images_valid.cuda(), labels_valid.cuda()
             grid_valid = torchvision.utils.make_grid(images_valid).cuda()
-
-            # if not global_vars.colab: # we don't want to store everything in colab, otherwise it crashes
-            #     self.tb['train'].add_image('images_train', grid_train) 
-            #     self.tb['valid'].add_image('images_valid', grid_valid) 
+            
             #     self.tb['train'].add_graph(self.network, images_train)
         
     def end_run(self):
@@ -177,10 +174,10 @@ class RunManager(object):
 
         # Clear printed output
         if global_vars.console:
-            # global_vars.cls() # clear console output
+            global_vars.cls() # clear console output
             print(df)            
         else:
-            # clear_output(wait=True) # update cell output for each epoch
+            clear_output(wait=True) # update cell output for each epoch
             display(df)
                 
     def track_loss(self, loss, data='train'):
