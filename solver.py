@@ -32,8 +32,6 @@ class Solver(object):
         # Loss/Optimizer
         if config.loss == 'mse':
             self.criterion = nn.MSELoss()
-        elif config.loss == 'nll':
-            self.criterion = nn.NLLLoss()
         elif config.loss == 'l1':
             self.criterion = nn.L1Loss()
         elif config.loss == 'mod':
@@ -91,7 +89,7 @@ class Solver(object):
             model = torchvision.models.vgg16(pretrained=True) if self.model_type == 'vgg-16' else torchvision.models.vgg16_bn(pretrained=True)
             num_features = model.classifier[6].in_features
             features = list(model.classifier.children())[:-3] # Remove last layer and non-linearity
-            features.extend([nn.Linear(num_features, self.output_ch * 2)]) # Add our layer with output_ch nn.Dropout(p=0.5)
+            features.extend([nn.Dropout(p=0.5), nn.Linear(num_features, self.output_ch * 2)]) # Add our layer with output_ch
             model.classifier = nn.Sequential(*features) # Replace the model classifier
             
             for param in model.features.parameters(): # disable grad for trained layers
@@ -117,9 +115,9 @@ class Solver(object):
             loaders = OrderedDict(train=train_loader, valid=valid_loader)
             
             if run.optimizer == 'adam':
-                optimizer = self.optimizers[run.optimizer](network.parameters(), lr=run.lr, betas=self.betas)
+                optimizer = self.optimizers[run.optimizer](network.classifier.parameters(), lr=run.lr, betas=self.betas)
             elif run.optimizer == 'sgd':
-                optimizer = self.optimizers[run.optimizer](network.parameters(), lr=run.lr, momentum=self.momentum)
+                optimizer = self.optimizers[run.optimizer](network.classifier.parameters(), lr=run.lr, momentum=self.momentum)
 
             if self.lr_scheduler: 
                 scheduler = self.schedulers['reduce_lr'](optimizer, patience=run.patience, \
@@ -132,10 +130,9 @@ class Solver(object):
                 m.begin_epoch()
                 print('\nEpoch {}'.format(epoch+1))
                 print('\nTrain:\n')
-                a = list(network.parameters())[0].clone()
+                a = list(network.parameters())[-1].clone()
                 for batch_idx, (images, labels) in enumerate(Bar(loaders['train'])):
-                    images, labels = images.to(self.device), labels.to(self.device) # labels is a tensor of (512, 128) values if we use MyVgg
-                    print(labels.shape)
+                    images, labels = images.to(self.device, dtype=torch.float), labels.to(self.device, dtype=torch.float) # labels is a tensor of (512, 128) values if we use MyVgg
                     optimizer.zero_grad()
                     preds = network(images) # returns a dictionary 512 outputs of 128 values (512, 128) if MyVgg is used
                     # Sum all losses from all classifiers if MyVgg is used
@@ -151,12 +148,9 @@ class Solver(object):
                     
                     m.track_loss(loss, 'train')
                     if isinstance(network, MyVgg): m.track_num_correct(preds, labels, 'train')
-                b = list(network.parameters())[0].clone()     
-                print(torch.equal(a.data, b.data))     
-                print(loss)  
-                # print(list(network.parameters())[0].clone()) 
-                print(preds, preds.shape)
-                print(labels, labels.shape)
+                b = list(network.parameters())[-1].clone()     
+                print('Grads: {}'.format(list(network.parameters())[-1].grad is None))   
+                print(torch.equal(a.data, b.data))        
                 # Validation
                 print('\nValid:\n')
                 network.eval() # skips dropout and batch_norm 
