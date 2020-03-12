@@ -148,7 +148,7 @@ class RunManager(object):
                 self.tb['valid'].add_scalar('Accuracy', torch.mean(accuracy_valid), self.epoch_count)
             
             if not global_vars.colab: # we don't want to store everything in colab, otherwise it crashes
-                for name, param in self.network.named_parameters():
+                for name, param in self.network.classifier.named_parameters():
                     self.tb['train'].add_histogram(name, param, self.epoch_count)
                     self.tb['train'].add_histogram(f'{name}.grad', param.grad, self.epoch_count)
 
