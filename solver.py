@@ -130,7 +130,7 @@ class Solver(object):
                 m.begin_epoch()
                 print('\nEpoch {}'.format(epoch+1))
                 print('\nTrain:\n')
-                a = list(network.parameters())[-1].clone()
+                # a = list(network.parameters())[-1].clone()
                 for batch_idx, (images, labels) in enumerate(Bar(loaders['train'])):
                     images, labels = images.to(self.device, dtype=torch.float), labels.to(self.device, dtype=torch.float) # labels is a tensor of (512, 128) values if we use MyVgg
                     optimizer.zero_grad()
@@ -148,9 +148,9 @@ class Solver(object):
                     
                     m.track_loss(loss, 'train')
                     if isinstance(network, MyVgg): m.track_num_correct(preds, labels, 'train')
-                b = list(network.parameters())[-1].clone()     
-                print('Grads: {}'.format(list(network.parameters())[-1].grad))   
-                print(torch.equal(a.data, b.data))        
+                # b = list(network.parameters())[-1].clone()     
+                # print('Grads: {}'.format(list(network.parameters())[-1].grad))   
+                # print(torch.equal(a.data, b.data))        
                 # Validation
                 print('\nValid:\n')
                 network.eval() # skips dropout and batch_norm 
