@@ -132,7 +132,6 @@ class Solver(object):
                 print('\nTrain:\n')
                 a = list(network.parameters())[0].clone()
                 for batch_idx, (images, labels) in enumerate(Bar(loaders['train'])):
-                    print(images.shape)
                     images, labels = images.to(self.device, dtype=torch.float), labels.to(self.device, dtype=torch.float) # labels is a tensor of (512, 128) values if we use MyVgg
                     optimizer.zero_grad()
                     preds = network(images) # returns a dictionary 512 outputs of 128 values (512, 128) if MyVgg is used

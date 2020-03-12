@@ -49,7 +49,7 @@ def main(config):
         return
 
     if config.model_type == 'tester': 
-        transform = transforms.Compose([transforms.Resize(224), # comment this if using Tester
+        transform = transforms.Compose([#transforms.Resize(224), # comment this if using Tester
                                         transforms.ToTensor(),
                                         transforms.Normalize([0.5], [0.5]),
                                         ])
