@@ -116,7 +116,7 @@ class RunManager(object):
         Initializes variables at the start of each epoch.
         '''
         print('Grads begin epoch: {}'.format(list(self.network.parameters())[0].grad is None))   
-        print(list(self.network.parameters())[0].grad)
+        # print(list(self.network.parameters())[0].grad)
         self.epoch_start_time = time.time()
         self.epoch_count += 1
         self.epoch_loss = OrderedDict(train=0, valid=0)
@@ -130,7 +130,7 @@ class RunManager(object):
             lr: learning rate of the optimizer (needed when lr is dynamic, i.e. when using optim.lr_scheduler.ReduceLROnPlateau)
         '''
         print('Grads end epoch: {}'.format(list(self.network.parameters())[0].grad is None))
-        print(list(self.network.parameters())[0].grad)   
+        # print(list(self.network.parameters())[0].grad)   
         loss_train = self.epoch_loss['train'] / len(self.loaders['train'].dataset)
         loss_valid = self.epoch_loss['valid'] / len(self.loaders['valid'].dataset)
         

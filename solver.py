@@ -151,6 +151,8 @@ class Solver(object):
                 b = list(network.parameters())[0].clone()     
                 print(torch.equal(a.data, b.data))       
                 print(list(network.parameters())[0].clone()) 
+                print(preds)
+                print(labels)
                 # Validation
                 print('\nValid:\n')
                 network.eval() # skips dropout and batch_norm 
