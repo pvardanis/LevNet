@@ -126,9 +126,9 @@ class Solver(object):
             loaders = OrderedDict(train=train_loader, valid=valid_loader)
             
             if run.optimizer == 'adam':
-                optimizer = self.optimizers[run.optimizer](network.parameters(), lr=run.lr, betas=self.betas)
+                optimizer = self.optimizers[run.optimizer](network.classifier.parameters(), lr=run.lr, betas=self.betas)
             elif run.optimizer == 'sgd':
-                optimizer = self.optimizers[run.optimizer](network.parameters(), lr=run.lr, momentum=self.momentum)
+                optimizer = self.optimizers[run.optimizer](network.classifier.parameters(), lr=run.lr, momentum=self.momentum)
 
             if self.lr_scheduler: 
                 scheduler = self.schedulers['reduce_lr'](optimizer, patience=run.patience, \
