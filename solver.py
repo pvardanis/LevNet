@@ -130,6 +130,7 @@ class Solver(object):
                 m.begin_epoch()
                 print('\nEpoch {}'.format(epoch+1))
                 print('\nTrain:\n')
+                print(optimizer)
                 a = list(network.parameters())[0].clone()
                 for batch_idx, (images, labels) in enumerate(Bar(loaders['train'])):
                     images, labels = images.to(self.device, dtype=torch.float), labels.to(self.device, dtype=torch.float) # labels is a tensor of (512, 128) values if we use MyVgg
@@ -150,7 +151,7 @@ class Solver(object):
                     if isinstance(network, MyVgg): m.track_num_correct(preds, labels, 'train')
                 b = list(network.parameters())[0].clone()     
                 print(torch.equal(a.data, b.data))       
-                print(list(network.parameters())[0].clone()) 
+                # print(list(network.parameters())[0].clone()) 
                 print(preds)
                 print(labels)
                 # Validation
