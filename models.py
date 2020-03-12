@@ -33,7 +33,7 @@ class LevNet(nn.Module):
     Simple implementation of LevNet.
     '''
     def __init__(self):
-        super(Net, self).__init__()
+        super(LevNet, self).__init__()
 
         # Conv layers
         self.conv1 = nn.Conv2d(3, 32, 3, padding=1) 
@@ -44,7 +44,7 @@ class LevNet(nn.Module):
 
         ## Maxpooling
         self.pool = nn.MaxPool2d(2,2)
-        
+
         ## Fully connected
         self.fc1 = nn.Linear(7 * 7 * 512, 2048) 
         self.fc2 = nn.Linear(2048, 1024)
