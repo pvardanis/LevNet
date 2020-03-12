@@ -33,7 +33,7 @@ class LevNet(nn.Module):
     Simple implementation of LevNet.
     '''
     def __init__(self):
-        super(LevNet, self).__init__()
+        super().__init__()
 
         # Conv layers
         self.conv1 = nn.Conv2d(3, 32, 3, padding=1) 
