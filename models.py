@@ -25,6 +25,38 @@ class Tester(nn.Module):
 
         return x
 
+class LevNet(nn.Module):
+    ### TODO: choose an architecture, and complete the class
+    10
+    def __init__(self):
+        super(Net, self).__init__()
+        self.conv1 = nn.Conv2d(3, 32, 3, padding=1) 
+        self.conv2 = nn.Conv2d(32, 64, 3, padding=1) 
+        self.conv3 = nn.Conv2d(64, 128, 3, padding=1) 
+        self.conv4 = nn.Conv2d(128, 256, 3, padding=1) 
+        self.conv5 = nn.Conv2d(256, 512, 3, padding=1) 
+        ## Maxpooling
+        self.pool = nn.MaxPool2d(2,2)
+        ## Fully connected
+        self.fc1 = nn.Linear(7 * 7 * 512, 2048) 
+        self.fc2 = nn.Linear(2048, 1024)
+        self.dropout = nn.Dropout(0.2) 
+
+    def forward(self, x):
+        ## Define forward behavior
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = self.pool(F.relu(self.conv3(x)))
+        x = self.pool(F.relu(self.conv4(x)))
+        x = self.pool(F.relu(self.conv5(x)))
+        # flatten image
+        x = x.view(-1, 7 * 7 * 512)
+        x = F.relu(self.fc1(x))
+        x = self.dropout(x)
+        x = F.relu(self.fc2(x))
+        
+        return x
+
 class MyVgg(nn.Module):
     def __init__(self, version='16', batch_norm=True, pretrained=True):
         super().__init__()
