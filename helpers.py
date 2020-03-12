@@ -467,11 +467,12 @@ def Cosine(output, target):
         output: predicted phases
         target: true phases  
     ''' 
-
     # Penalize if output is out of the unit circle   
     squares = output ** 2 # (x ^ 2, y ^ 2)
     loss_1 = ((squares[:, ::2] + squares[:, 1::2]) - 1) ** 2 # (x ^ 2 + y ^ 2 - 1) ** 2
 
+    ## If tanh outputs sin(theta), cos(theta), then x = cos(theta), y = sin(theta) (values from -1 to 1)
+    ## but everything else remains the same
     # Compute the second loss, 1 - cos
     loss_2 =  1. - torch.cos(torch.atan2(output[:, 1::2], output[:, ::2]) - target)  
     

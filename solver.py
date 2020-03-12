@@ -88,23 +88,24 @@ class Solver(object):
 
             model = torchvision.models.vgg16(pretrained=True) if self.model_type == 'vgg-16' else torchvision.models.vgg16_bn(pretrained=True)
             num_features = model.classifier[6].in_features
-            features = list(model.classifier.children())[:-5] # Remove last layer and non-linearity
-            features.extend([nn.Linear(4096, 4096, bias=True),
-                            nn.ReLU(inplace=True),
-                            nn.Linear(num_features, 
-                            self.output_ch * 2)]) # Add our layer with output_ch
-            
-            # features = list(model.classifier.children())[:-3] # Remove last layer and non-linearity
-            # features.extend([nn.ReLU(),
-            #                 nn.Dropout(p=0.5), 
+            # features = list(model.classifier.children())[:-5] # Remove last layer and non-linearity
+            # features.extend([nn.Linear(4096, 4096, bias=True),
+            #                 nn.ReLU(inplace=True),
             #                 nn.Linear(num_features, 
             #                 self.output_ch * 2)]) # Add our layer with output_ch
+            
+            features = list(model.classifier.children())[:-3] # Remove last layer and non-linearity
+            features.extend([nn.ReLU(),
+                            nn.Dropout(p=0.5), 
+                            nn.Linear(num_features, 
+                            self.output_ch * 2),
+                            nn.Tanh()]) # Add our layer with output_ch
+            
             model.classifier = nn.Sequential(*features) # Replace the model classifier
             
             for param in model.features.parameters(): # disable grad for trained layers
                 param.requires_grad = False
 
-            # print(model)
             # summary(model.to('cuda'), (3, 224, 224))
             return model
 
