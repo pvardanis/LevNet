@@ -149,7 +149,7 @@ class Solver(object):
                     m.track_loss(loss, 'train')
                     if isinstance(network, MyVgg): m.track_num_correct(preds, labels, 'train')
                 b = list(network.parameters())[-1].clone()     
-                print('Grads: {}'.format(list(network.parameters())[-1].grad is None))   
+                print('Grads: {}'.format(list(network.parameters())[-1].grad))   
                 print(torch.equal(a.data, b.data))        
                 # Validation
                 print('\nValid:\n')
