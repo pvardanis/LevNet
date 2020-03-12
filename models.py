@@ -53,8 +53,9 @@ class LevNet(nn.Module):
         x = x.view(-1, 7 * 7 * 512)
         x = F.relu(self.fc1(x))
         x = self.dropout(x)
-        x = F.relu(self.fc2(x))
-        
+        x = F.tanh(self.fc2(x))
+        x = self.dropout(x)
+
         return x
 
 class MyVgg(nn.Module):
