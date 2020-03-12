@@ -86,17 +86,17 @@ class Solver(object):
             
             assert self.image_size == 224, "ERROR: Wrong image size."
 
-            # model = torchvision.models.vgg16(pretrained=True) if self.model_type == 'vgg-16' else torchvision.models.vgg16_bn(pretrained=True)
-            # num_features = model.classifier[6].in_features
-            # features = list(model.classifier.children())[:-3] # Remove last layer and non-linearity
-            # features.extend([nn.Linear(num_features, self.output_ch * 2)]) # Add our layer with output_ch nn.Dropout(p=0.5)
-            # model.classifier = nn.Sequential(*features) # Replace the model classifier
+            model = torchvision.models.vgg16(pretrained=True) if self.model_type == 'vgg-16' else torchvision.models.vgg16_bn(pretrained=True)
+            num_features = model.classifier[6].in_features
+            features = list(model.classifier.children())[:-3] # Remove last layer and non-linearity
+            features.extend([nn.Linear(num_features, self.output_ch * 2)]) # Add our layer with output_ch nn.Dropout(p=0.5)
+            model.classifier = nn.Sequential(*features) # Replace the model classifier
             
-            # for param in model.features.parameters(): # disable grad for trained layers
-            #     param.requires_grad = False
+            for param in model.features.parameters(): # disable grad for trained layers
+                param.requires_grad = False
 
             # summary(model.to('cuda'), (3, 224, 224))
-            return torchvision.models.vgg16_bn(pretrained=True)#model
+            return model
 
         elif self.model_type == 'tester': return Tester()
         elif self.model_type == 'levnet': return LevNet()
@@ -115,9 +115,9 @@ class Solver(object):
             loaders = OrderedDict(train=train_loader, valid=valid_loader)
             
             if run.optimizer == 'adam':
-                optimizer = self.optimizers[run.optimizer](network.classifier.parameters(), lr=run.lr, betas=self.betas)
+                optimizer = self.optimizers[run.optimizer](network.parameters(), lr=run.lr, betas=self.betas)
             elif run.optimizer == 'sgd':
-                optimizer = self.optimizers[run.optimizer](network.classifier.parameters(), lr=run.lr, momentum=self.momentum)
+                optimizer = self.optimizers[run.optimizer](network.parameters(), lr=run.lr, momentum=self.momentum)
 
             if self.lr_scheduler: 
                 scheduler = self.schedulers['reduce_lr'](optimizer, patience=run.patience, \
