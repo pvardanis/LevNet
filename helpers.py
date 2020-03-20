@@ -21,8 +21,8 @@ from models import *
 from IPython.display import display
 from IPython.display import clear_output
 
-pd.set_option('display.max_columns',1000)
-pd.set_option('display.max_rows',1000)
+pd.set_option('display.max_columns', 1000)
+pd.set_option('display.max_rows', 1000)
 
 def set_seed(seed):
     random.seed(seed)
@@ -56,22 +56,19 @@ class RunManager(object):
         self.save_best_model = save_best_model
         self.stop_early = stop_early
         
-        self.epoch_count = 0 # it could've been even more abstract than this (i.e. define Epoch())
+        self.epoch_count = 0 
         self.epoch_loss = 0
         self.epoch_num_correct = 0
         self.epoch_start_time = None
         
         self.run_params = None # runs returned from RunBuilder()
         self.run_count = 0
-        self.run_data = [] # parameter values and results of each epoch
+        self.run_data = [] # parameter values and results for each epoch
         self.run_start_time = None
         
         self.network = None # model for each run
         self.loaders = None # dataloaders (train & validation) that's being used for each run
         self.tb = OrderedDict(train=None, valid=None) # tensorboard instance
-
-    def __getitem__(self, key):
-        return getattr(self, key)
 
     def begin_run(self, run, network, loaders):
         
@@ -85,6 +82,7 @@ class RunManager(object):
         self.loaders = loaders
         self.tb['train'] = SummaryWriter(comment=f'-{run}-train')
         self.tb['valid'] = SummaryWriter(comment=f'-{run}-valid')
+
         if self.stop_early: 
             assert run.patience, "ERROR: You forgot to add patience."
             self.early_stopping = EarlyStopping(patience=run.patience, path=self.tb['valid'].get_logdir()) # initialize early stopping and pass the path to save the best model
@@ -97,7 +95,6 @@ class RunManager(object):
             images_valid, labels_valid = next(iter(self.loaders['valid']))
             images_valid, labels_valid = images_valid.cuda(), labels_valid.cuda()
             grid_valid = torchvision.utils.make_grid(images_valid).cuda()
-            
             #     self.tb['train'].add_graph(self.network, images_train)
         
     def end_run(self):
@@ -128,7 +125,8 @@ class RunManager(object):
         # print(list(self.network.parameters())[0].grad)   
         loss_train = self.epoch_loss['train'] / len(self.loaders['train'].dataset)
         loss_valid = self.epoch_loss['valid'] / len(self.loaders['valid'].dataset)
-        
+
+        # TODO: Test if this implementation works.
         if isinstance(self.network, MyVgg): # add this if network is MyVgg
             accuracy_train = 100. * self.epoch_num_correct['train'] / len(self.loaders['train'].dataset) # accuracy for each phase classifier, tensor of (512, 1)
             accuracy_valid = 100. * self.epoch_num_correct['valid'] / len(self.loaders['train'].dataset) # accuracy for each phase classifier, tensor of (512, 1)
@@ -137,7 +135,7 @@ class RunManager(object):
         epoch_duration = time.time() - self.epoch_start_time
         run_duration = time.time() - self.run_start_time
 
-        if global_vars.tensorboard: # add graphs to SummaryWriter()
+        if global_vars.tensorboard: # add graphs to tensorboard
             self.tb['train'].add_scalar('Loss', loss_train, self.epoch_count)
             self.tb['valid'].add_scalar('Loss', loss_valid, self.epoch_count)
             if isinstance(self.network, MyVgg):
@@ -165,7 +163,7 @@ class RunManager(object):
         for k, v in self.run_params._asdict().items(): 
             if k != 'patience': # no need to add patience in columns
                 results[k] = v
-            if k == 'lr': # no need to add patience in columns
+            if k == 'lr': # add updated lr to the results (when using lr_scheduler)
                 results[k] = lr
 
         self.run_data.append(results)
@@ -202,7 +200,7 @@ class RunManager(object):
         '''
         self.epoch_num_correct[data] += self._get_num_correct(preds, labels) # tensor of (512, num_correct) for each classifier
 
-    @torch.no_grad() # only applies to this function
+    @torch.no_grad() # only applies to this function, disables autograd to free up some RAM
     def _get_num_correct(self, preds, labels):
         '''
         Computes number of correct predicitons.
@@ -227,8 +225,7 @@ class RunManager(object):
         Inputs
             filename (str): file name to be saved
 
-        '''
-        
+        '''        
         # setup filename and directory
         current_dir = os.getcwd() # get current working directory
         datetime_ = datetime.now().strftime('%d-%m-%Y_%H-%M-%S') # add date and time to filename
@@ -320,7 +317,7 @@ class CustomDataset(Dataset): # inherits from Dataset
         return image, target
 
     def __len__(self):  # return number of samples we have
-        return 12000#self.num_files
+        return 12000 # self.num_files (dummy approach, make it more general)
 
 def arrange_images():
     '''
@@ -401,7 +398,9 @@ def create_h5(path='images'):
             target = pd.read_csv(tgt, sep=" ", header=None) # load csv
             target = target.values.squeeze()
 
-            # This is for MyVgg
+            # This is for MyVgg. Remember when using MyVgg that the outputs are 512 nodes, instead of 1024 when using VGG (or similar) with
+            # tanh activation function (outputs values between -1 and 1, as sin/cos pairs).
+
             # target.columns = ['phase']
             # possible_values = [str(value) for value in range(128) if value not in target.phase.values] # phases not included in the dataframe
             # extra = pd.DataFrame({'phase_' + value.zfill(3): [0] * 512 for value in possible_values})
@@ -410,6 +409,7 @@ def create_h5(path='images'):
             # target[extra.columns] = extra
             # target = target.reindex(sorted(target.columns), axis=1)
             # target = target.to_numpy()
+
             target_set = hf.create_dataset(
                     name='phases_'+str(i),
                     data=target,
@@ -418,7 +418,7 @@ def create_h5(path='images'):
 
 def test_model(model, dataset):
     ''' 
-    Tests model output for an input image.
+    Dummy function that tests model output for an input image.
 
     Inputs
         model: model to be tested
@@ -434,46 +434,3 @@ def test_model(model, dataset):
     output = model(images[0].unsqueeze(dim=0).to('cuda'))
     print(output, output.shape)
 
-# Custom losses
-def MSEWrap(output, target):
-    ''' 
-    Custom loss function that wraps the MSE around 2pi.
-
-    Inputs
-        output: predicted phases
-        target: true phases   
-    '''
-    loss = torch.mean(torch.fmod(output - target, 2 * np.pi) ** 2)
-    return loss
-
-def Atan(output, target):
-    ''' 
-    Custom loss function atan2.
-
-    Inputs
-        output: predicted phases
-        target: true phases   
-    '''
-    return torch.mean(torch.abs(torch.atan2(torch.sin(target - output), torch.cos(target - output))))
-
-def Cosine(output, target):
-    '''
-    Custom loss function with 2 losses:
-
-    - loss_1: penalizes the area out of the unit circle 
-    - loss_2: 0 if output = target
-
-    Inputs
-        output: predicted phases
-        target: true phases  
-    ''' 
-    # Penalize if output is out of the unit circle   
-    squares = output ** 2 # (x ^ 2, y ^ 2)
-    loss_1 = ((squares[:, ::2] + squares[:, 1::2]) - 1) ** 2 # (x ^ 2 + y ^ 2 - 1) ** 2
-
-    ## If tanh outputs sin(theta), cos(theta), then x = cos(theta), y = sin(theta) (values from -1 to 1)
-    ## but everything else remains the same
-    # Compute the second loss, 1 - cos
-    loss_2 =  1. - torch.cos(torch.atan2(output[:, 1::2], output[:, ::2]) - target)  
-    
-    return torch.mean(loss_1 + loss_2)

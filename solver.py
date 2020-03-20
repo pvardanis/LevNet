@@ -9,7 +9,9 @@ import torchvision.models
 import os
 from helpers import *
 from models import *
-from barbar import Bar
+from custom_loss import *
+
+from barbar import Bar # progress bar while training
 from IPython.display import clear_output
 from torchsummary import summary
                 

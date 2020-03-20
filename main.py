@@ -15,24 +15,6 @@ import glob
 set_seed(0)
 
 def main(config):
-    # train_loader = get_loader(image_path=config.train_path,
-    #                         image_size=config.image_size,
-    #                         batch_size=config.batch_size,
-    #                         num_workers=config.num_workers,
-    #                         mode='train',
-    #                         augmentation_prob=config.augmentation_prob)
-    # valid_loader = get_loader(image_path=config.valid_path,
-    #                         image_size=config.image_size,
-    #                         batch_size=config.batch_size,
-    #                         num_workers=config.num_workers,
-    #                         mode='valid',
-    #                         augmentation_prob=0.)
-    # test_loader = get_loader(image_path=config.test_path,
-    #                         image_size=config.image_size,
-    #                         batch_size=config.batch_size,
-    #                         num_workers=config.num_workers,
-    #                         mode='test',
-    #                         augmentation_prob=0.)
     # set global_vars
     global_vars.console = config.console
     global_vars.tensorboard = config.tensorboard
@@ -49,8 +31,7 @@ def main(config):
         return
 
     if config.model_type == 'tester': 
-        transform = transforms.Compose([#transforms.Resize(224), # comment this if using Tester
-                                        transforms.ToTensor(),
+        transform = transforms.Compose([transforms.ToTensor(),
                                         transforms.Normalize([0.5], [0.5]),
                                         ])
 

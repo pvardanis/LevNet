@@ -67,6 +67,12 @@ class LevNet(nn.Module):
         return x
 
 class MyVgg(nn.Module):
+    '''
+    In this approach, a modified version of the classifier part of VGG is followed. Instead of the last fully connected layer,
+    we used 512 seperate classifiers each with 128 outputs, corresponding to the 128 discrete levels of phase values.
+    '''
+
+    #TODO: Test if implementation is correct.
     def __init__(self, version='16', batch_norm=True, pretrained=True):
         super().__init__()
         
