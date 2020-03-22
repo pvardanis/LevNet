@@ -96,7 +96,7 @@ class MyVgg(nn.Module):
             self.pc['PC_{}'.format(classifier)] = nn.Sequential(nn.Linear(4096, 128, bias=True)) # no need for nn.Softmax(), it is encapsulated nn.BCEWithLogitsLoss()
 
     # Set your own forward pass
-    def forward(self, img, extra_info=None):
+    def forward(self, x, extra_info=None):
         x = x.view(x.size(0), -1)
         pre_split = self.model(x) # before splitting to different classifiers, take the output from vgg
 
